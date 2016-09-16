@@ -12,6 +12,7 @@ namespace Test
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+		/// dankdank
         [STAThread]
         static void Main()
         {
