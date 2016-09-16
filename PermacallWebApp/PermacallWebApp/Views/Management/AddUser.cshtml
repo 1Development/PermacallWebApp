@@ -1,0 +1,72 @@
+﻿@model PermacallWebApp.Models.ViewModels.AddUserModel
+@{
+    ViewBag.Title = "Add TS User";
+}
+
+<div class="row">
+    <div class="col-md-6 col-md-offset-3 contentBox" style="margin-top: 30px">
+        <h2>Add new TS User to your account</h2>
+        <br/>
+        @if (Model.ChannelEmpty && !Model.StartedAdding && !Model.UserAdded)
+        {
+            <p>In the next step there will apear a channel in teamspeak below the AFK channel, to assign the Teamspeak user to your account you need to join that channel. The Channelname will be the username of your account, and the password for the channel will be a randomly generated code</p>
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <button type="button" class="btn btn-primary" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new { a = 1 })'">Continue</button>
+
+                </div>
+            </div>
+        }
+        @if (Model.ChannelEmpty && Model.StartedAdding && !Model.UserAdded)
+        {
+            <p>The channel you need to join is:</p>
+            <h3>@Model.ChannelName</h3>
+            <br/>
+            <p>And the password for this channel is:</p>
+            <h3>@Model.Password</h3>
+            <br/><br/>
+
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <button type="button" class="btn btn-primary" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new { a = 2 })'">Continue</button>
+
+                </div>
+            </div>        
+        }
+        @if (!Model.ChannelEmpty && Model.StartedAdding && !Model.UserAdded)
+        {
+            <p>Is this you?</p>
+            <h3>@Model.TSName</h3>
+            <br/>
+            <div class="row">
+                <div class="col-md-2 col-md-offset-3">
+                    <button type="button" class="btn btn-success" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new {a = 3})'">Yes</button>
+
+                </div>
+                <div class="col-md-2 col-md-offset-2">
+                    <button type="button" class="btn btn-danger" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new { a = 2, kick = 1 })'">No</button>
+
+                </div>
+            </div>
+        }
+        @if (Model.UserAdded)
+        {
+            <p>The teamspeak user has been added to your account!</p>
+
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <button type="button" class="btn btn-primary" style="width: 100%" onclick="location.href = '@Url.Action("Index", "Management")'">Back to Management</button>
+
+                </div>
+            </div>
+        }
+        @if (!String.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="col-md-12 contentBox text-center" style="border-style:solid; border-color: red; background-color: lightcoral; border-width: 2px">
+                <p style="margin:0px">@Model.ErrorMessage</p>
+            </div>
+        }
+
+    </div>
+</div>
+

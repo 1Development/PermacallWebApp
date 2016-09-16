@@ -1,0 +1,56 @@
+﻿
+@using System.Web.UI.WebControls
+@model PermacallWebApp.Models.Account
+@{
+    ViewBag.Title = "Register";
+}
+
+<div class="row">
+    @using (Html.BeginForm("Register", "Login", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top:50px;">
+            <h2 class="text-center">Registration</h2>
+            <div class="form-group row">
+                @Html.LabelFor(model => model.Username, htmlAttributes: new { @class = "col-md-12" })
+                <div class="col-md-12">
+                    @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control", @style = "height:auto; font-size:140%" } })
+                    @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group row">
+                @Html.LabelFor(model => model.Password, htmlAttributes: new {@class = "col-md-12"})
+                <div class="col-md-12">
+                    @Html.EditorFor(model => model.Password, new {htmlAttributes = new {@class = "form-control", @style = "height:auto; font-size:140%"}})
+                    @Html.ValidationMessageFor(model => model.Password, "", new {@class = "text-danger"})
+                </div>
+            </div>
+
+            <div class="form-group row">
+                @Html.LabelFor(model => model.CheckPassword, htmlAttributes: new { @class = "col-md-12" })
+                <div class="col-md-12">
+                    @Html.EditorFor(model => model.CheckPassword, new { htmlAttributes = new { @class = "form-control", @style = "height:auto; font-size:140%" } })
+                    @Html.ValidationMessageFor(model => model.CheckPassword, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+
+            @if (Model != null && !string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="col-md-12 contentBox text-center" style="border-style:solid; border-color: red; background-color: lightcoral; border-width: 2px">
+                    <p style="margin:0px">@Model.ErrorMessage</p>
+                </div>
+            }
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3 col-sm-10 col-sm-offset-1">
+                        <input type="submit" value="Aanmelden" class="btn btn-primary" style="width: 100%; position: relative; top: 6px;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
