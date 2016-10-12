@@ -20,6 +20,7 @@ namespace PermacallWebApp.Controllers
     public class ManagementController : Controller
     {
         // GET: Management
+        [HttpGet]
         public ActionResult Index(int id = -1, int a = 0)
         {
             Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
@@ -38,7 +39,7 @@ namespace PermacallWebApp.Controllers
                 {
                     using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
                     {
-                        queryRunner.Login(LoginData.ServerUsername, LoginData.ServerPassword).GetDumpString();
+                        queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                         queryRunner.SelectVirtualServerById(1);
                         queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
@@ -80,6 +81,7 @@ namespace PermacallWebApp.Controllers
             return RedirectToAction("Index", "Management", new { id = -1});
         }
 
+        [HttpGet]
         public ActionResult AddUser(int a = 0, int kick = 0)
         {
             Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
@@ -106,7 +108,7 @@ namespace PermacallWebApp.Controllers
                 viewModel.StartedAdding = true;
                 using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
                 {
-                    queryRunner.Login(LoginData.ServerUsername, LoginData.ServerPassword).GetDumpString();
+                    queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                     queryRunner.SelectVirtualServerById(1);
                     queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
@@ -188,19 +190,22 @@ namespace PermacallWebApp.Controllers
                             Password = viewModel.Password
                         });
                     }
-
-
-
-
-
-
-
+                    
                     queryRunner.Logout();
                 }
             }
 
 
             return View(viewModel);
+        }
+
+        [HttpGet]
+        public ActionResult ManageUsers()
+        {
+            UserManagementModel returnModel = new UserManagementModel();
+
+
+            return View();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace PermacallWebApp.Repos
             List<TSUser> returnList = new List<TSUser>();
             try
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
+                using (var conn = new MySqlConnection(DB.ConnectionString))
                 {
                     conn.Open();
                     string getSaltSQL = @"SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE ACCOUNTID = @accountid AND ENABLED = 1";
@@ -48,7 +48,7 @@ namespace PermacallWebApp.Repos
             List<TSUser> returnList = new List<TSUser>();
             try
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
+                using (var conn = new MySqlConnection(DB.ConnectionString))
                 {
                     conn.Open();
                     string getSaltSQL = @"SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE TEAMSPEAKDBID = @teamspeakid AND ENABLED = 1";
@@ -80,7 +80,7 @@ namespace PermacallWebApp.Repos
             List<TSUser> returnList = new List<TSUser>();
             try
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
+                using (var conn = new MySqlConnection(DB.ConnectionString))
                 {
                     conn.Open();
                     string getSaltSQL = @"INSERT INTO TEAMSPEAKUSER(TEAMSPEAKDBID, ACCOUNTID, NICKNAME) VALUES(@teamspeakid, @accountid, @nickname)";
@@ -107,7 +107,7 @@ namespace PermacallWebApp.Repos
             List<TSUser> returnList = new List<TSUser>();
             try
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
+                using (var conn = new MySqlConnection(DB.ConnectionString))
                 {
                     conn.Open();
                     string getSaltSQL = @"UPDATE TEAMSPEAKUSER SET TEAMSPEAKDBID = @newteamspeakid, ACCOUNTID = @accountid, NICKNAME = @nickname WHERE ENABLED = @enabled AND TEAMSPEAKDBID = @teamspeakid";
@@ -137,7 +137,7 @@ namespace PermacallWebApp.Repos
             List<TSUser> returnList = new List<TSUser>();
             try
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
+                using (var conn = new MySqlConnection(DB.ConnectionString))
                 {
                     conn.Open();
                     string getSaltSQL = @"UPDATE TEAMSPEAKUSER SET ENABLED = 0 WHERE TEAMSPEAKDBID = @teamspeakid";
