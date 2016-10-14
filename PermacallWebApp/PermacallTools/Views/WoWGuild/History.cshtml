@@ -17,6 +17,7 @@
                 <th>Avg. ILvL</th>
                 <th>Artifact</th>
                 <th>Head</th>
+                <th>Neck</th>
                 <th>Shoulder</th>
                 <th>Back</th>
                 <th>Chest</th>
@@ -36,9 +37,10 @@
             {
                 <tr>
                     <td>@character.name</td>
-                    <td>@character.items.averageItemLevelEquipped / @character.items.averageItemLevel</td>
+                    <td>@character.items.averageItemLevelEquipped/@character.items.averageItemLevel</td>
                     <td style="background-color: @character.items.mainHand.rarityColor">@character.items.mainHand.itemLevel</td>
                     <td style="background-color: @character.items.head.rarityColor">@character.items.head.itemLevel</td>
+                    <td style="background-color: @character.items.neck.rarityColor">@character.items.neck.itemLevel</td>
                     <td style="background-color: @character.items.shoulder.rarityColor">@character.items.shoulder.itemLevel</td>
                     <td style="background-color: @character.items.back.rarityColor">@character.items.back.itemLevel</td>
                     <td style="background-color: @character.items.chest.rarityColor">@character.items.chest.itemLevel</td>
