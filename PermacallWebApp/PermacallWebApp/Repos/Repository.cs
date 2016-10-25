@@ -43,9 +43,9 @@ namespace PermacallWebApp.Repos
                         {
                             if (reader.Read())
                             {
-                                return
+                            //    return
                             } 
-                            else return new Tuple<bool, string>(false, "NO_RETURN");
+                            //else return new Tuple<bool, string>(false, "NO_RETURN");
                         }
                     }
                 }
@@ -53,8 +53,13 @@ namespace PermacallWebApp.Repos
             }
             catch (MySqlException)
             {
-                return new Tuple<bool, string>(false, "NO_CONNECTION");
+                
             }
+
+            return new Dictionary<string, string>()
+                {
+                    {"test", "test2"}
+                };
         }
     }
 }
