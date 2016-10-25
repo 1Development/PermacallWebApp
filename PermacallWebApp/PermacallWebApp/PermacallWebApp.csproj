@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\LanPartyController.cs" />
     <Compile Include="Logic\Login.cs" />
     <Compile Include="LoginData.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -186,6 +187,7 @@
     <Content Include="Views\Management\AddUser.cshtml" />
     <Content Include="Views\Login\Register.cshtml" />
     <Content Include="Views\Login\RegisterSuccesfull.cshtml" />
+    <Content Include="Views\LanParty\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
