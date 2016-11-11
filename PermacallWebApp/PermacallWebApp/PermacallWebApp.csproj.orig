@@ -189,8 +189,11 @@
     <Content Include="Views\Management\AddUser.cshtml" />
     <Content Include="Views\Login\Register.cshtml" />
     <Content Include="Views\Login\RegisterSuccesfull.cshtml" />
+<<<<<<< HEAD
     <Content Include="Views\Management\ManageUsers.cshtml" />
+=======
     <Content Include="Views\LanParty\Index.cshtml" />
+>>>>>>> LANParty
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
