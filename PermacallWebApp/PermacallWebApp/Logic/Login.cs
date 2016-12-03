@@ -20,7 +20,7 @@ namespace PermacallWebApp.Logic
             else sessionKey = "nothing";
 
 
-            var sessionRe = MySQLRepo.GetUser(sessionKey);
+            var sessionRe = AccountRepo.GetUser(sessionKey);
             if (sessionRe.ID > 0)
             {
                 context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
@@ -33,13 +33,13 @@ namespace PermacallWebApp.Logic
 
         public static Tuple<bool, string> AuthorizeUser(HttpContext context, string username, string password)
         {
-            var saltRe = MySQLRepo.GetSalt(username);
+            var saltRe = AccountRepo.GetSalt(username);
             if (!saltRe.Item1)
             {
                 if(saltRe.Item2 == "NOCONNECTION") return new Tuple<bool, string>(false, "Connection to the database could not be established");
                 return new Tuple<bool, string>(false, "Username not found!");
             }
-            var authRe = MySQLRepo.ValidateCredentials(username, Encrypt(password, saltRe.Item2));
+            var authRe = AccountRepo.ValidateCredentials(username, Encrypt(password, saltRe.Item2));
             if (!authRe.Item1)
             {
                 if (saltRe.Item2 == "NOCONNECTION") return new Tuple<bool, string>(false, "Connection to the database could not be established");   
@@ -47,7 +47,7 @@ namespace PermacallWebApp.Logic
             }
 
             string sessionKey = GenerateRandomString(authRe.Item2.ToInt(), 64);
-            MySQLRepo.SetSessionKey(username, sessionKey);
+            AccountRepo.SetSessionKey(username, sessionKey);
 
             context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
             context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddMinutes(30);

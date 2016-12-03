@@ -9,16 +9,15 @@ namespace PermacallWebApp.Repos
 {
     public class DB
     {
-        public static IRepository Repo
+        private static IDatabaseRepo mainDB;
+        public static IDatabaseRepo MainDB
         {
             get
             {
-                if (Repo != null) Repo = new MySQLRepo();
-                return Repo;
+                if (mainDB == null) mainDB = new MySQLRepo(SecureData.DatabaseString);
+                return mainDB;
             }
-            private set { Repo = value; }
+            private set { mainDB = value; }
         }
-
-        public static string ConnectionString { get { return SecureData.DatabaseString; } }
     }
 }

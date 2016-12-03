@@ -74,10 +74,10 @@ namespace PermacallWebApp.Controllers
                 {
                     if (!account.Username.Contains(' '))
                     {
-                        if (MySQLRepo.CheckAvailable(account.Username))
+                        if (AccountRepo.CheckAvailable(account.Username))
                         {
                             string randomstring = Login.GenerateRandomString(0, 128);
-                            MySQLRepo.InsertNewAccount(account.Username, Login.Encrypt(account.Password, randomstring), randomstring);
+                            AccountRepo.InsertNewAccount(account.Username, Login.Encrypt(account.Password, randomstring), randomstring);
                             return RedirectToAction("RegisterSuccesfull", "Login");
                         }
                         else

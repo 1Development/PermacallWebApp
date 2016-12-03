@@ -2,157 +2,50 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Microsoft.SqlServer.Server;
 using MySql.Data.MySqlClient;
-using PermacallWebApp.Models.ReturnModels;
 
 namespace PermacallWebApp.Repos
 {
-    public class MySQLRepo : IRepository
+    public class MySQLRepo : IDatabaseRepo
     {
-        public Tuple<bool,string> GetSalt(string username)
-        {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
-            {
-                {"username", username}
-            };
-            var result = MySQLClass.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
-            if (result != null && result["SALT"] != null)
-                return new Tuple<bool, string>(true, result["SALT"]);
-            else if()
+        public string ConnectionString { private get; set; }
 
+        public MySQLRepo(string connectionString)
+        {
+            this.ConnectionString = connectionString;
+        }
+
+        public bool CheckExist(string SQLquery, Dictionary<string, string> parameters)
+        {
+            string sql = SQLquery;
+            foreach (var parameter in parameters)
+            {
+                sql = ReplaceFirst(sql, "?", "@" + parameter.Key);
+            }
 
             try
             {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
+                using (var conn = new MySqlConnection(ConnectionString))
                 {
                     conn.Open();
-                    string getSaltSQL = @"SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = @username";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
+                    using (MySqlCommand cmd = new MySqlCommand(sql, conn))
                     {
-                        cmd.Parameters.Add(new MySqlParameter("username", username.ToLower()));
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        foreach (var parameter in parameters)
                         {
-                            if (reader.Read()) return new Tuple<bool, string>(true, reader["SALT"].ToString());
-                            else return new Tuple<bool, string>(false, "NO_SALT");
+                            cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
                         }
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return new Tuple<bool, string>(false, "NOCONNECTION");
-            }
-        }
-
-        public bool CheckAvailable(string username)
-        {
-            var result = GetSalt(username);
-            if (!result.Item1 && result.Item2 == "NO_SALT") return true;
-            return false;
-        }
-
-        public Tuple<bool,string> ValidateCredentials(string username, string password)
-        {
-            try
-            {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT ID FROM ACCOUNT WHERE LOWER(USERNAME) = @username AND PASSWORD = @password";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("username", username.ToLower()));
-                        cmd.Parameters.Add(new MySqlParameter("password", password));
 
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            if (reader.Read()) return new Tuple<bool, string>(true, reader["ID"].ToString());
-                            else return new Tuple<bool, string>(false,"NOTCORRECT");
-                        }
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return new Tuple<bool, string>(false, "NOCONNECTION");
-            }
-        }
-
-        public bool SetSessionKey(string username, string sessionKey)
-        {
-            try
-            {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"UPDATE ACCOUNT SET SESSIONKEY=@sessionkey WHERE LOWER(USERNAME) = @username";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("sessionkey", sessionKey));
-                        cmd.Parameters.Add(new MySqlParameter("username", username.ToLower()));
-
-                        cmd.ExecuteNonQuery();
-                        return true;
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return false;
-            }
-        }
-
-        public User GetUser(string sessionKey)
-        {
-            try
-            {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT ID, OPERATORCOUNT, USERNAME, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = @sessionKey";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("sessionKey", sessionKey));
-
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
+                            Dictionary<string, string> returnDictionary = new Dictionary<string, string>();
                             if (reader.Read())
-                                return new User(reader["ID"].ToInt(),
-                                    reader["OPERATORCOUNT"].ToInt(),
-                                    reader["USERNAME"].ToString(),
-                                    (User.PermissionGroup)reader["PERMISSION"]);
-                            else return new User(0, 0, "NOSESSION", User.PermissionGroup.Guest);
+                            {
+                                return true;
+                            }
+                            return false;
                         }
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return new User(-1, 0, "NOCONNECTION", User.PermissionGroup.Guest);
-            }
-        }
-
-        public bool InsertNewAccount(string username, string password, string salt)
-        {
-            try
-            {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"INSERT INTO ACCOUNT(USERNAME, PASSWORD, SALT) VALUES (@username, @password, @salt)";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("username", username));
-                        cmd.Parameters.Add(new MySqlParameter("password", password));
-                        cmd.Parameters.Add(new MySqlParameter("salt", salt));
-
-                        cmd.ExecuteNonQuery();
-                        return true;
                     }
                 }
 
@@ -163,6 +56,144 @@ namespace PermacallWebApp.Repos
             }
         }
 
+        public Dictionary<string, string> GetOneResultQuery(string SQLquery, Dictionary<string, string> parameters)
+        {
+            string sql = SQLquery;
+            foreach (var parameter in parameters)
+            {
+                sql = ReplaceFirst(sql, "?", "@" + parameter.Key);
+            }
 
+            try
+            {
+                using (var conn = new MySqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                    {
+
+                        foreach (var parameter in parameters)
+                        {
+                            cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
+                        }
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            Dictionary<string, string> returnDictionary = new Dictionary<string, string>();
+                            if (reader.Read())
+                            {
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    returnDictionary.Add(reader.GetName(i), reader.GetString(i));
+                                }
+                                return returnDictionary;
+                            }
+                            return new Dictionary<string, string>();
+                        }
+                    }
+                }
+
+            }
+            catch (MySqlException)
+            {
+                return null;
+            }
+        }
+
+        public List<Dictionary<string, string>> GetMultipleResultsQuery(string SQLquery, Dictionary<string, string> parameters)
+        {
+            string sql = SQLquery;
+            foreach (var parameter in parameters)
+            {
+                sql = ReplaceFirst(sql, "?", "@" + parameter.Key);
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                    {
+
+                        foreach (var parameter in parameters)
+                        {
+                            cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
+                        }
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            List<Dictionary<string, string>> returnList = new List<Dictionary<string, string>>();
+                            while (reader.Read())
+                            {
+                                Dictionary<string, string> thisRow = new Dictionary<string, string>();
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    thisRow.Add(reader.GetName(i), reader.GetString(i));
+                                }
+                                returnList.Add(thisRow);
+                            }
+                            return returnList;
+                        }
+                    }
+                }
+
+            }
+            catch (MySqlException)
+            {
+                return null;
+            }
+        }
+
+        public bool UpdateQuery(string SQLquery, Dictionary<string, string> parameters)
+        {
+            string sql = SQLquery;
+            foreach (var parameter in parameters)
+            {
+                sql = ReplaceFirst(sql, "?", "@" + parameter.Key);
+            }
+
+            try
+            {
+                using (var conn = new MySqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                    {
+
+                        foreach (var parameter in parameters)
+                        {
+                            cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
+                        }
+
+                        return cmd.ExecuteNonQuery() > 0;
+                    }
+                }
+
+            }
+            catch (MySqlException)
+            {
+                return false;
+            }
+        }
+
+        public bool DeleteQuery(string SQLquery, Dictionary<string, string> parameters)
+        {
+            return UpdateQuery(SQLquery, parameters);
+        }
+        public bool InsertQuery(string SQLquery, Dictionary<string, string> parameters)
+        {
+            return UpdateQuery(SQLquery, parameters);
+        }
+
+        private string ReplaceFirst(string text, string search, string replace)
+        {
+            int pos = text.IndexOf(search);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+        }
     }
 }

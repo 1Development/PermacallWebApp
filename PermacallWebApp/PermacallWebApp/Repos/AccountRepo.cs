@@ -11,29 +11,19 @@ namespace PermacallWebApp.Repos
     {
         public static Tuple<bool,string> GetSalt(string username)
         {
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = @username";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("username", username.ToLower()));
+                {"username", username.ToLower()}
+            };
+            var result = DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read()) return new Tuple<bool, string>(true, reader["SALT"].ToString());
-                            else return new Tuple<bool, string>(false, "NO_SALT");
-                        }
-                    }
-                }
+            if (result != null && result["SALT"] != null)
+                return new Tuple<bool, string>(true, result["SALT"]);
+            if(result != null && result.Count==0)
+                return new Tuple<bool, string>(false, "NO_SALT");
 
-            }
-            catch (MySqlException)
-            {
-                return new Tuple<bool, string>(false, "NOCONNECTION");
-            }
+
+            return new Tuple<bool, string>(false, "NOCONNECTION");
         }
 
         public static bool CheckAvailable(string username)
@@ -45,111 +35,65 @@ namespace PermacallWebApp.Repos
 
         public static Tuple<bool,string> ValidateCredentials(string username, string password)
         {
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT ID FROM ACCOUNT WHERE LOWER(USERNAME) = @username AND PASSWORD = @password";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("username", username.ToLower()));
-                        cmd.Parameters.Add(new MySqlParameter("password", password));
+                {"username", username.ToLower()},
+                {"password", password}
+            };
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID FROM ACCOUNT WHERE LOWER(USERNAME) = ? AND PASSWORD = ?", parameters);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read()) return new Tuple<bool, string>(true, reader["ID"].ToString());
-                            else return new Tuple<bool, string>(false,"NOTCORRECT");
-                        }
-                    }
-                }
-
-            }
-            catch (MySqlException)
+            if (result != null)
             {
-                return new Tuple<bool, string>(false, "NOCONNECTION");
+                if (result.Count > 0 && result["ID"] != null)
+                    return new Tuple<bool, string>(true, result["ID"]);
+                return new Tuple<bool, string>(false, "NOTCORRECT");
             }
+            return new Tuple<bool, string>(false, "NOCONNECTION");
         }
 
         public static bool SetSessionKey(string username, string sessionKey)
         {
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"UPDATE ACCOUNT SET SESSIONKEY=@sessionkey WHERE LOWER(USERNAME) = @username";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("sessionkey", sessionKey));
-                        cmd.Parameters.Add(new MySqlParameter("username", username.ToLower()));
+                {"sessionKey", sessionKey},
+                {"username", username.ToLower()}
+            };
+            var result = DB.MainDB.UpdateQuery("UPDATE ACCOUNT SET SESSIONKEY=? WHERE LOWER(USERNAME) = ?", parameters);
 
-                        cmd.ExecuteNonQuery();
-                        return true;
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return false;
-            }
+            return result;
         }
 
         public static User GetUser(string sessionKey)
         {
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT ID, OPERATORCOUNT, USERNAME FROM ACCOUNT WHERE SESSIONKEY = @sessionKey";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("sessionKey", sessionKey));
+                {"sessionkey", sessionKey}
+            };
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = ?", parameters);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                                return new User(reader["ID"].ToInt(),
-                                    reader["OPERATORCOUNT"].ToInt(),
-                                    reader["USERNAME"].ToString());
-                            else return new User(0, 0, "NOSESSION");
-                        }
-                    }
-                }
-
-            }
-            catch (MySqlException)
+            if (result != null)
             {
-                return new User(-1, 0, "NOCONNECTION");
+                if (result.Count > 0)
+                    return new User(result["ID"].ToInt(),
+                        result["OPERATORCOUNT"].ToInt(),
+                        result["USERNAME"].ToString(),
+                        (User.PermissionGroup)result["PERMISSION"].ToInt());
+                else return new User(0, 0, "NOSESSION", User.PermissionGroup.Guest);
             }
+            return new User(-1, 0, "NOCONNECTION", User.PermissionGroup.Guest);
         }
 
         public static bool InsertNewAccount(string username, string password, string salt)
         {
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(Database.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"INSERT INTO ACCOUNT(USERNAME, PASSWORD, SALT) VALUES (@username, @password, @salt)";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("username", username));
-                        cmd.Parameters.Add(new MySqlParameter("password", password));
-                        cmd.Parameters.Add(new MySqlParameter("salt", salt));
+                {"username", username.ToLower()},
+                {"password", password},
+                {"salt", salt }
+            };
+            var result = DB.MainDB.InsertQuery("INSERT INTO ACCOUNT(USERNAME, PASSWORD, SALT) VALUES (?, ?, ?)", parameters);
 
-                        cmd.ExecuteNonQuery();
-                        return true;
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return false;
-            }
+            return result;
         }
 
 

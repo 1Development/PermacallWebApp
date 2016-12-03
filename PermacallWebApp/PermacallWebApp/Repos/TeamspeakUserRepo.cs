@@ -11,151 +11,82 @@ namespace PermacallWebApp.Repos
     {
         public static List<TSUser> GetTeamspeakUsers(int accountID)
         {
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            {
+                {"accountid", accountID.ToString() }
+            };
+            var result = DB.MainDB.GetMultipleResultsQuery("SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE ACCOUNTID = @accountid AND ENABLED = 1", parameters);
+
+            if (result == null)
+                return null;
+
             List<TSUser> returnList = new List<TSUser>();
-            try
+
+            foreach (var row in result)
             {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
+                returnList.Add(new TSUser()
                 {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE ACCOUNTID = @accountid AND ENABLED = 1";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("accountid", accountID));
-
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                returnList.Add(
-                                    new TSUser(
-                                        reader["TEAMSPEAKDBID"].ToString(),
-                                        reader["NICKNAME"].ToString(),
-                                        accountID));
-                            }
-                        }
-                    }
-                }
-                return returnList;
-
+                    AccountID = accountID,
+                    NickName = row["NICKNAME"],
+                    TeamspeakDBID = row["TEAMSPEAKDBID"]
+                });
             }
-            catch (MySqlException)
-            {
-                return new List<TSUser>();
-            }
+
+
+            return returnList;
         }
         public static bool TSUserAvailable(string DBID)
         {
-            List<TSUser> returnList = new List<TSUser>();
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE TEAMSPEAKDBID = @teamspeakid AND ENABLED = 1";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("teamspeakid", DBID));
+                {"teamspeakid", DBID }
+            };
+            var result = DB.MainDB.GetOneResultQuery("SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE TEAMSPEAKDBID = ? AND ENABLED = 1", parameters);
+            
+            if (result != null && result.Count == 0)
+                return true;
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                return false;
-                            }
-                            return true;
-                        }
-                    }
-                }
-
-            }
-            catch (MySqlException)
-            {
-                return false;
-            }
+            return false;
         }
 
 
-        public static List<TSUser> AddTeamspeakUserToAccount(TSUser toAddUser)
+        public static bool AddTeamspeakUserToAccount(TSUser toAddUser)
         {
-            List<TSUser> returnList = new List<TSUser>();
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"INSERT INTO TEAMSPEAKUSER(TEAMSPEAKDBID, ACCOUNTID, NICKNAME) VALUES(@teamspeakid, @accountid, @nickname)";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("teamspeakid", toAddUser.TeamspeakDBID));
-                        cmd.Parameters.Add(new MySqlParameter("accountid", toAddUser.AccountID));
-                        cmd.Parameters.Add(new MySqlParameter("nickname", toAddUser.NickName));
+                {"teamspeakid", toAddUser.TeamspeakDBID},
+                {"accountid", toAddUser.AccountID.ToString()},
+                {"nickname", toAddUser.NickName }
+            };
+            var result = DB.MainDB.InsertQuery("INSERT INTO TEAMSPEAKUSER(TEAMSPEAKDBID, ACCOUNTID, NICKNAME) VALUES(@teamspeakid, @accountid, @nickname)", parameters);
 
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                return returnList;
-
-            }
-            catch (MySqlException)
-            {
-                return new List<TSUser>();
-            }
+            return result;
         }
 
-        public static List<TSUser> EditTSUser(string teamspeakid, TSUser editResult)
+        public static bool EditTSUser(string teamspeakid, TSUser editResult)
         {
-            List<TSUser> returnList = new List<TSUser>();
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"UPDATE TEAMSPEAKUSER SET TEAMSPEAKDBID = @newteamspeakid, ACCOUNTID = @accountid, NICKNAME = @nickname WHERE ENABLED = @enabled AND TEAMSPEAKDBID = @teamspeakid";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("newteamspeakid", editResult.TeamspeakDBID));
-                        cmd.Parameters.Add(new MySqlParameter("accountid", editResult.AccountID));
-                        cmd.Parameters.Add(new MySqlParameter("nickname", editResult.NickName));
-                        cmd.Parameters.Add(new MySqlParameter("enabled", 1));
-                        cmd.Parameters.Add(new MySqlParameter("teamspeakid", teamspeakid));
+                {"newteamspeakid", editResult.TeamspeakDBID},
+                {"accountid", editResult.AccountID.ToString() },
+                {"nickname", editResult.NickName},
+                {"enabled", 1.ToString() },
+                {"teamspeakid", teamspeakid}
+            };
+            var result = DB.MainDB.UpdateQuery("UPDATE TEAMSPEAKUSER SET TEAMSPEAKDBID = ?, ACCOUNTID = ?, NICKNAME = ? WHERE ENABLED = ? AND TEAMSPEAKDBID = ?", parameters);
 
-
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                return returnList;
-
-            }
-            catch (MySqlException)
-            {
-                return new List<TSUser>();
-            }
+            return result;
         }
 
-        public static List<TSUser> DisableTSUser(string teamspeakid)
+        public static bool DisableTSUser(string teamspeakid)
         {
-            List<TSUser> returnList = new List<TSUser>();
-            try
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
-                using (var conn = new MySqlConnection(DB.ConnectionString))
-                {
-                    conn.Open();
-                    string getSaltSQL = @"UPDATE TEAMSPEAKUSER SET ENABLED = 0 WHERE TEAMSPEAKDBID = @teamspeakid";
-                    using (MySqlCommand cmd = new MySqlCommand(getSaltSQL, conn))
-                    {
-                        cmd.Parameters.Add(new MySqlParameter("teamspeakid", teamspeakid));
+                {"teamspeakid", teamspeakid}
+            };
+            var result = DB.MainDB.UpdateQuery("UPDATE TEAMSPEAKUSER SET ENABLED = 0 WHERE TEAMSPEAKDBID = ?", parameters);
 
-
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                return returnList;
-
-            }
-            catch (MySqlException)
-            {
-                return new List<TSUser>();
-            }
+            return result;
         }
     }
 }
