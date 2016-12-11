@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using MySql.Data.MySqlClient;
 using PermacallWebApp.Models.ReturnModels;
+using PCDataDLL;
 
 namespace PermacallWebApp.Repos
 {
@@ -15,7 +16,7 @@ namespace PermacallWebApp.Repos
             {
                 {"username", username.ToLower()}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
+            var result = PCDataDLL.DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
 
             if (result != null && result["SALT"] != null)
                 return new Tuple<bool, string>(true, result["SALT"]);

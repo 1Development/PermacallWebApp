@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Microsoft.SqlServer.Server;
+﻿using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 
-namespace PermacallWebApp.Repos
+namespace PCDataDLL
 {
-    public class MySQLRepo : IDatabaseRepo
+    public class MySQLRepo
     {
         public string ConnectionString { private get; set; }
 

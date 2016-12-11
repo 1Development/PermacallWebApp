@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermacallWebApp", "Permacal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermacallTools", "PermacallTools\PermacallTools.csproj", "{3B90A8F9-D0B0-42D6-9794-4951067A4CE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCDataDLL", "PCDataDLL\PCDataDLL.csproj", "{FFF27272-08BC-4146-A5B8-E32C5CD1797F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{3B90A8F9-D0B0-42D6-9794-4951067A4CE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B90A8F9-D0B0-42D6-9794-4951067A4CE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B90A8F9-D0B0-42D6-9794-4951067A4CE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFF27272-08BC-4146-A5B8-E32C5CD1797F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFF27272-08BC-4146-A5B8-E32C5CD1797F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFF27272-08BC-4146-A5B8-E32C5CD1797F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFF27272-08BC-4146-A5B8-E32C5CD1797F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
