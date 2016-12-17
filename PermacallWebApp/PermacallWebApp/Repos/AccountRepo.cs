@@ -18,7 +18,7 @@ namespace PermacallWebApp.Repos
             };
             var result = PCDataDLL.DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
 
-            if (result != null && result["SALT"] != null)
+            if (result != null && result.ContainsKey("SALT") && result["SALT"] != null)
                 return new Tuple<bool, string>(true, result["SALT"]);
             if(result != null && result.Count==0)
                 return new Tuple<bool, string>(false, "NO_SALT");
@@ -29,8 +29,12 @@ namespace PermacallWebApp.Repos
 
         public static bool CheckAvailable(string username)
         {
-            var result = GetSalt(username);
-            if (!result.Item1 && result.Item2 == "NO_SALT") return true;
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            {
+                {"username", username.ToLower()}
+            };
+            var result = PCDataDLL.DB.MainDB.CheckExist("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
+            if (!result) return true;
             return false;
         }
 
