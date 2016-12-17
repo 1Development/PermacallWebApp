@@ -10,17 +10,18 @@ namespace PermacallWebApp.Repos
 {
     public class AccountRepo
     {
-        public static Tuple<bool,string> GetSalt(string username)
+        public static Tuple<bool, string> GetSalt(string username)
         {
+            GetAllUsers(); //TODO : REMOVE THIS
             Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
                 {"username", username.ToLower()}
             };
             var result = PCDataDLL.DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
 
-            if (result != null && result.ContainsKey("SALT") && result["SALT"] != null)
-                return new Tuple<bool, string>(true, result["SALT"]);
-            if(result != null && result.Count==0)
+            if (result != null && result.Get("SALT") != null)
+                return new Tuple<bool, string>(true, result.Get("SALT"));
+            if (result != null)
                 return new Tuple<bool, string>(false, "NO_SALT");
 
 
@@ -38,7 +39,7 @@ namespace PermacallWebApp.Repos
             return false;
         }
 
-        public static Tuple<bool,string> ValidateCredentials(string username, string password)
+        public static Tuple<bool, string> ValidateCredentials(string username, string password)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
@@ -49,8 +50,8 @@ namespace PermacallWebApp.Repos
 
             if (result != null)
             {
-                if (result.Count > 0 && result["ID"] != null)
-                    return new Tuple<bool, string>(true, result["ID"]);
+                if (result.Get("ID") != null)
+                    return new Tuple<bool, string>(true, result.Get("ID"));
                 return new Tuple<bool, string>(false, "NOTCORRECT");
             }
             return new Tuple<bool, string>(false, "NOCONNECTION");
@@ -78,14 +79,20 @@ namespace PermacallWebApp.Repos
 
             if (result != null)
             {
-                if (result.Count > 0)
-                    return new User(result["ID"].ToInt(),
-                        result["OPERATORCOUNT"].ToInt(),
-                        result["USERNAME"].ToString(),
-                        (User.PermissionGroup)result["PERMISSION"].ToInt());
-                else return new User(0, 0, "NOSESSION", User.PermissionGroup.Guest);
+                if (result.Get("ID") != null)
+                {
+                    User.PermissionGroup permissionGroup;
+                    Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
+                    return new User(result.Get("ID").ToInt(),
+                        result.Get("OPERATORCOUNT").ToInt(),
+                        result.Get("USERNAME").ToString(),
+                        permissionGroup);
+                }
+                else
+                    return new User(0, 0, "NOSESSION", User.PermissionGroup.GUEST);
+
             }
-            return new User(-1, 0, "NOCONNECTION", User.PermissionGroup.Guest);
+            return new User(-1, 0, "NOCONNECTION", User.PermissionGroup.GUEST);
         }
 
         public static bool InsertNewAccount(string username, string password, string salt)
@@ -97,6 +104,41 @@ namespace PermacallWebApp.Repos
                 {"salt", salt }
             };
             var result = DB.MainDB.InsertQuery("INSERT INTO ACCOUNT(USERNAME, PASSWORD, SALT) VALUES (?, ?, ?)", parameters);
+
+            return result;
+        }
+
+        public static User GetAllUsers()
+        {
+            var result = DB.MainDB.GetMultipleResultsQuery("SELECT ID, OPERATORCOUNT, USERNAME, PERMISSION FROM ACCOUNT", null);
+
+            if (result != null)
+            {
+                List<User> returnList = new List<User>();
+                foreach (var row in result)
+                {
+                    User.PermissionGroup permissionGroup;
+                    Enum.TryParse(row.Get("PERMISSION"), out permissionGroup);
+                    returnList.Add(new User(row.Get("ID").ToInt(),
+                        row.Get("OPERATORCOUNT").ToInt(),
+                        row.Get("USERNAME"),
+                        permissionGroup));
+                }
+
+            }
+            return new User(-1, 0, "NOCONNECTION", User.PermissionGroup.GUEST);
+        }
+
+        public static bool UpdateAccount(User toEdit)
+        {
+            string sql = "UPDATE ACCOUT SET PERMISSION=?, OPERATORCOUNT=? WHERE ID=?";
+            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            {
+                {"permission", toEdit.Permission.ToString()},
+                {"password", toEdit.OperatorCount.ToString()},
+                {"id", toEdit.ID.ToString()}
+            };
+            var result = DB.MainDB.InsertQuery(sql, parameters);
 
             return result;
         }

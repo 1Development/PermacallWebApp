@@ -14,6 +14,9 @@ namespace PCDataDLL
 
         public bool CheckExist(string SQLquery, Dictionary<string, string> parameters)
         {
+            if (parameters == null)
+                parameters = new Dictionary<string, string>();
+
             string sql = SQLquery;
             foreach (var parameter in parameters)
             {
@@ -35,7 +38,6 @@ namespace PCDataDLL
 
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            Dictionary<string, string> returnDictionary = new Dictionary<string, string>();
                             if (reader.Read())
                             {
                                 return true;
@@ -52,8 +54,11 @@ namespace PCDataDLL
             }
         }
 
-        public Dictionary<string, string> GetOneResultQuery(string SQLquery, Dictionary<string, string> parameters)
+        public DBResult GetOneResultQuery(string SQLquery, Dictionary<string, string> parameters)
         {
+            if (parameters == null)
+                parameters = new Dictionary<string, string>();
+
             string sql = SQLquery;
             foreach (var parameter in parameters)
             {
@@ -82,9 +87,9 @@ namespace PCDataDLL
                                 {
                                     returnDictionary.Add(reader.GetName(i), reader.GetString(i));
                                 }
-                                return returnDictionary;
+                                return new DBResult(returnDictionary);
                             }
-                            return new Dictionary<string, string>();
+                            return new DBResult(new Dictionary<string, string>());
                         }
                     }
                 }
@@ -96,8 +101,11 @@ namespace PCDataDLL
             }
         }
 
-        public List<Dictionary<string, string>> GetMultipleResultsQuery(string SQLquery, Dictionary<string, string> parameters)
+        public List<DBResult> GetMultipleResultsQuery(string SQLquery, Dictionary<string, string> parameters)
         {
+            if (parameters == null)
+                parameters = new Dictionary<string, string>();
+
             string sql = SQLquery;
             foreach (var parameter in parameters)
             {
@@ -119,7 +127,7 @@ namespace PCDataDLL
 
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            List<Dictionary<string, string>> returnList = new List<Dictionary<string, string>>();
+                            List<DBResult> returnList = new List<DBResult>();
                             while (reader.Read())
                             {
                                 Dictionary<string, string> thisRow = new Dictionary<string, string>();
@@ -127,7 +135,7 @@ namespace PCDataDLL
                                 {
                                     thisRow.Add(reader.GetName(i), reader.GetString(i));
                                 }
-                                returnList.Add(thisRow);
+                                returnList.Add(new DBResult(thisRow));
                             }
                             return returnList;
                         }
@@ -143,6 +151,9 @@ namespace PCDataDLL
 
         public bool UpdateQuery(string SQLquery, Dictionary<string, string> parameters)
         {
+            if (parameters == null)
+                parameters = new Dictionary<string, string>();
+
             string sql = SQLquery;
             foreach (var parameter in parameters)
             {

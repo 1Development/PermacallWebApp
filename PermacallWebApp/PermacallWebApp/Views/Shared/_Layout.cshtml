@@ -32,6 +32,10 @@
                     {
                         @Html.LiActionLink("Manage Accounts", "Index", "Management")
                         @Html.LiActionLink("Logout", "Logout", "Login")
+                        if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
+                        {
+                            @Html.LiActionLink("Teamspeak", "ShowTeamspeak","Management")
+                        }
                     }
                     else
                     {
@@ -39,6 +43,22 @@
                         @Html.LiActionLink("Register", "Register", "Login")
                     }
                     @Html.LiActionLink("LAN-Party", "Index", "LanParty")
+
+                    @* // TODO : Finish up shared layout file *@
+                    @if (currentUser.Permission == PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                    {
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                Admin
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                @Html.LiActionLink("Manage Accounts", "AdminManageAccounts", "Management");
+                                <li><a href="#">Page 1-2</a></li>
+                                <li><a href="#">Page 1-3</a></li>
+                            </ul>
+                        </li>
+                    }
                     <li role="presentation"><a href="/tools/tools">Tools</a></li>
                 </ul>
             </div>

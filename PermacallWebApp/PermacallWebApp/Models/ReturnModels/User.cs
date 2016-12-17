@@ -9,10 +9,9 @@ namespace PermacallWebApp.Models.ReturnModels
     {
         public enum PermissionGroup
         {
-            Guest,
-            User,
-            Operator,
-            Admin
+            GUEST,
+            USER,
+            ADMIN
         }
 
         public User(int id, int operatorCount, string username, PermissionGroup permission)

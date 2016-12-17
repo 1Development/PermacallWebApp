@@ -28,8 +28,8 @@ namespace PermacallWebApp.Repos
                 returnList.Add(new TSUser()
                 {
                     AccountID = accountID,
-                    NickName = row["NICKNAME"],
-                    TeamspeakDBID = row["TEAMSPEAKDBID"]
+                    NickName = row.Get("NICKNAME"),
+                    TeamspeakDBID = row.Get("TEAMSPEAKDBID")
                 });
             }
 
@@ -44,7 +44,7 @@ namespace PermacallWebApp.Repos
             };
             var result = DB.MainDB.GetOneResultQuery("SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE TEAMSPEAKDBID = ? AND ENABLED = 1", parameters);
             
-            if (result != null && result.Count == 0)
+            if (result != null && !result.Exists())
                 return true;
 
             return false;

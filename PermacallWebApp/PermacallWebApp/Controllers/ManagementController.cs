@@ -14,6 +14,7 @@ using TS3QueryLib.Core;
 using TS3QueryLib.Core.Common;
 using TS3QueryLib.Core.Server;
 using TS3QueryLib.Core.CommandHandling;
+using TS3QueryLib.Core.Common.Responses;
 using TS3QueryLib.Core.Server.Entities;
 
 namespace PermacallWebApp.Controllers
@@ -86,7 +87,6 @@ namespace PermacallWebApp.Controllers
         public ActionResult AddUser(int a = 0, int kick = 0)
         {
             Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
-
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
@@ -201,7 +201,79 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpGet]
+        public ActionResult ShowTeamspeak()
+        {
+            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
+            if(CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER) return RedirectToAction("Index", "Login");
+            
+
+
+            ShowTeamSpeakModel returnModel = new ShowTeamSpeakModel();
+
+            ListResponse<ChannelListEntry> channelList;
+            ListResponse<ClientListEntry> clientList;
+            using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+            {
+                queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
+                queryRunner.SelectVirtualServerById(1);
+                queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
+
+                { // REAL EXCECUTED CODE
+                    channelList = queryRunner.GetChannelList();
+                    clientList = queryRunner.GetClientList();
+                }
+
+                queryRunner.Logout();
+            }
+
+            List<TSChannel> AllChanels = new List<TSChannel>();
+            foreach (var channelEntry in channelList)
+            {
+                AllChanels.Add(new TSChannel()
+                {
+                    ChannelName = channelEntry.Name,
+                    ChannelID = channelEntry.ChannelId,
+                    Order = channelEntry.Order.ToInt(),
+                    ParentID = channelEntry.ParentChannelId,
+                    isSpacer = channelEntry.Name.Contains("[spacer")
+                });
+            }
+
+            foreach (TSChannel channel in AllChanels)
+            {
+                var clientsInChannel = clientList.Values.FindAll(x => x.ChannelId == channel.ChannelID);
+                foreach (ClientListEntry client in clientsInChannel)
+                {
+                    channel.TSUsers.Add(new TSUser() {NickName = client.Nickname, isBot = false /*client.ClientIP.IsNullOrTrimmedEmpty()*/});
+                }
+            }
+
+
+            
+            foreach (TSChannel channel in AllChanels)
+            {
+                channel.Children.AddRange(AllChanels.FindAll(x => x.ParentID == channel.ChannelID));
+            }
+            TSChannel root = new TSChannel() { ChannelID = 0, ChannelName = "Permanente Call" };
+            root.Children.AddRange(AllChanels.FindAll(x => x.ParentID == 0));
+
+            returnModel.TSRootChannel = root;
+
+            return View(returnModel);
+        }
+
+        [HttpGet]
         public ActionResult ManageUsers()
+        {
+            UserManagementModel returnModel = new UserManagementModel();
+
+
+            return View();//TODO : TEST OMG
+        }
+
+        [HttpGet]
+        public ActionResult AdminManageAccounts()
         {
             UserManagementModel returnModel = new UserManagementModel();
 

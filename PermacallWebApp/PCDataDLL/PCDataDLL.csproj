@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DB.cs" />
+    <Compile Include="DBResult.cs" />
     <Compile Include="MySQLRepo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecureData.cs" />

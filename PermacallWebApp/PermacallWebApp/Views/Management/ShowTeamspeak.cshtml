@@ -1,0 +1,59 @@
+﻿@using PermacallWebApp.Models.ReturnModels
+@model PermacallWebApp.Models.ViewModels.ShowTeamSpeakModel
+@{
+    ViewBag.Title = "Teamspeak";
+}
+@helper ChannelView(TSChannel toShowChannel)
+{
+    <div class="col-md-12">
+        @if (!toShowChannel.isSpacer)
+        {
+            <a href="#@toShowChannel.ChannelID" data-toggle="collapse">
+                <p class="Channel">@toShowChannel.ChannelName</p>
+            </a>
+        }
+        else
+        {
+            <p class="Channel"> </p>
+        }
+        <div id="@toShowChannel.ChannelID" class="collapse in">
+            @if (toShowChannel.TSUsers.Count > 0)
+            {
+                foreach (TSUser channelUser in toShowChannel.TSUsers.FindAll(x => !x.isBot))
+                {
+                    <p class="NickName">
+                        <span class="fa-stack" aria-hidden="true">
+                            <i class="fa fa-circle fa-stack-1x" style="color: #1e90ff" aria-hidden="true"></i>
+                            <i class="fa fa-circle-o fa-stack-1x" style="color: #00008b" aria-hidden="true"></i>
+                        </span>
+                        @channelUser.NickName
+                    </p>
+
+                }
+            }
+
+            @foreach (TSChannel childChannel in toShowChannel.Children)
+            {
+                @ChannelView(childChannel)
+            }
+        </div>
+    </div>
+}
+
+<div class="contentBox form-horizontal col-lg-12 col-md-12" style="margin-top: 50px;">
+    <h2>Teamspeak overview</h2>
+    @ChannelView(Model.TSRootChannel)
+
+</div>
+
+<script>
+    $(".button").click(function () {
+        if ($(this).html() == "-") {
+            $(this).html("+");
+        }
+        else {
+            $(this).html("-");
+        }
+        $("#box").slideToggle();
+    });
+</script>

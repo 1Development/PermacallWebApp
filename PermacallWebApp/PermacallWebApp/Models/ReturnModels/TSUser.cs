@@ -10,6 +10,7 @@ namespace PermacallWebApp.Models.ReturnModels
         public TSUser()
         {
         }
+
         public TSUser(string teamspeakDBID, string nickName, int accountID, int Enabled = 1)
         {
             NickName = nickName;
@@ -22,6 +23,7 @@ namespace PermacallWebApp.Models.ReturnModels
         public string TeamspeakDBID { get; set; }
         public int AccountID { get; set; }
         public bool toEdit { get; set; }
+        public bool isBot { get; set; }
 
     }
 }
