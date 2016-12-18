@@ -194,7 +194,6 @@
     <Content Include="Views\Login\RegisterSuccesfull.cshtml" />
     <Content Include="Views\Management\ManageUsers.cshtml" />
     <Content Include="Views\LanParty\Index.cshtml" />
-    <Content Include="Views\Management\AdminManageAccounts.cshtml" />
     <Content Include="Views\Management\ShowTeamspeak.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

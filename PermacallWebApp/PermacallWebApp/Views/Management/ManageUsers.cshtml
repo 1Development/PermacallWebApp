@@ -1,7 +1,86 @@
-﻿
+﻿@using PermacallWebApp.Models.ReturnModels
+@model PermacallWebApp.Models.ViewModels.UserManagementModel
 @{
     ViewBag.Title = "ManageUsers";
 }
 
-<h2>ManageUsers</h2>
+<div class="row">
+    <div class="contentBox form-horizontal col-md-12" style="margin-top: 50px;">
 
+        <h2>Manage Users</h2>
+        <br />
+
+        @for (int i = 0; i < Model.UserList.Count; i++)
+        {
+            User user = Model.UserList[i];
+
+            <a href="#@user.ID" data-toggle="collapse">
+                <h3 class="noLink">@user.Username</h3>
+            </a>
+            <div id="@user.ID" class="collapse">
+                @using (Html.BeginForm("ManageUsers", "Management", FormMethod.Post, new { user = user.ID }))
+                {
+                    <table class="table table-bordered" style="max-width: 100%">
+                        <thead>
+                            <tr style="background-color: rgba(255, 255, 255, 0.2);">
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Operator Count</th>
+                                <th>Strikes</th>
+                                <th>Permission</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @Html.HiddenFor(m => m.UserList[i].ID)
+                                <th>@Html.ValueFor(Model => Model.UserList[i].ID)</th>
+                                <th>@Html.ValueFor(Model => Model.UserList[i].Username)</th>
+                                <th>@Html.EditorFor(Model => Model.UserList[i].OperatorCount)</th>
+                                <th>@Html.EditorFor(Model => Model.UserList[i].Strikes)</th>
+                                <th>@Html.EnumDropDownListFor(Model => Model.UserList[i].Permission)</th>
+                                @if (!Model.UserList[i].hasBeenStriked)
+                                {
+                                    <th><button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button></th>
+                                }
+                                else
+                                {
+                                    <th><button type="button" class="btn btn-danger disabled " onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button></th>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h3>Teamspeak Users:</h3>
+                    for (int j = 0; j < Model.UserList[i].TSUsers.Count; j++)
+                    {
+                        TSUser tsUser = user.TSUsers[j];
+                        <table class="table table-bordered" style="max-width: 100%">
+                            <thead>
+                                <tr style="background-color: rgba(255, 255, 255, 0.2);">
+                                    <th>Nickname</th>
+                                    <th>Added</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
+                                    <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
+                                    <th></th>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    }
+                    <div class="col-md-4 col-md-offset-8 col-sm-6 col-sm-offset-6">
+                        <input type="submit" value="Save" class="btn btn-primary" style="width: 100%; position: relative; top: 6px;" />
+                    </div>
+                }
+            </div>
+
+
+
+
+        }
+    </div>
+</div>

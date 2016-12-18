@@ -64,7 +64,7 @@ namespace PermacallWebApp.Repos
             return result;
         }
 
-        public static bool EditTSUser(string teamspeakid, TSUser editResult)
+        public static bool UpdateTSUser(string teamspeakid, TSUser editResult)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
@@ -88,6 +88,29 @@ namespace PermacallWebApp.Repos
             var result = DB.MainDB.UpdateQuery("UPDATE TEAMSPEAKUSER SET ENABLED = 0 WHERE TEAMSPEAKDBID = ?", parameters);
 
             return result;
+        }
+
+        public static List<TSUser> GetAllTSUsers()
+        {
+            var result =
+                DB.MainDB.GetMultipleResultsQuery(
+                    "SELECT teamspeakDBID, AccountID, NickName, Added FROM TEAMSPEAKUSER WHERE ENABLED = 1", null);
+            List<TSUser> returnList = new List<TSUser>();
+            if (result != null)
+            {
+                foreach (DBResult row in result)
+                {
+                    returnList.Add(new TSUser()
+                    {
+                        NickName = row.Get("NickName"),
+                        TeamspeakDBID = row.Get("teamspeakDBID"),
+                        added = DateTime.Parse(row.Get("Added")),
+                        AccountID = row.Get("AccountID").ToInt()
+                    });
+                }
+                return returnList;
+            }
+            return null;
         }
     }
 }

@@ -9,12 +9,12 @@
         @if (!toShowChannel.isSpacer)
         {
             <a href="#@toShowChannel.ChannelID" data-toggle="collapse">
-                <p class="Channel">@toShowChannel.ChannelName</p>
+                <p class="Channel noLink">@toShowChannel.ChannelName</p>
             </a>
         }
         else
         {
-            <p class="Channel"> <br/> </p>
+            <p class="Channel noLink"> <br/> </p>
         }
         <div id="@toShowChannel.ChannelID" class="collapse in">
             @if (toShowChannel.TSUsers.Count > 0)
@@ -40,7 +40,7 @@
     </div>
 }
 
-<div class="contentBox form-horizontal col-lg-12 col-md-12" style="margin-top: 50px;">
+<div class="contentBox form-horizontal col-lg-8 col-md-8 col-lg-offset-2 col-md-offset-2" style="margin-top: 50px;">
     <h2>Teamspeak overview</h2>
     @ChannelView(Model.TSRootChannel)
 

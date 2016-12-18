@@ -19,6 +19,8 @@ namespace PCDataDLL
         {
             if (resultRow.ContainsKey(column))
                 return resultRow[column];
+            if (resultRow.ContainsKey(column.ToUpper()))
+                return resultRow[column.ToUpper()];
             return null;
         }
 

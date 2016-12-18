@@ -22,6 +22,19 @@ namespace PermacallWebApp
 
         }
 
+        public static uint ToUInt(this object obj)
+        {
+            try
+            {
+                return Convert.ToUInt32(obj);
+            }
+            catch (InvalidCastException)
+            { return 0; }
+            catch (FormatException)
+            { return 0; }
+
+        }
+
         public static MvcHtmlString LiActionLink(this HtmlHelper html, string text, string action, string controller)
         {
             var context = html.ViewContext;

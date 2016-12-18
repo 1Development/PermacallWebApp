@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 
 namespace PCDataDLL
@@ -85,7 +86,8 @@ namespace PCDataDLL
                             {
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
-                                    returnDictionary.Add(reader.GetName(i), reader.GetString(i));
+                                    if (!reader.IsDBNull(i))
+                                        returnDictionary.Add(reader.GetName(i), reader.GetString(i));
                                 }
                                 return new DBResult(returnDictionary);
                             }
@@ -133,7 +135,8 @@ namespace PCDataDLL
                                 Dictionary<string, string> thisRow = new Dictionary<string, string>();
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
-                                    thisRow.Add(reader.GetName(i), reader.GetString(i));
+                                    if(!reader.IsDBNull(i))
+                                        thisRow.Add(reader.GetName(i), reader.GetString(i));
                                 }
                                 returnList.Add(new DBResult(thisRow));
                             }
@@ -178,8 +181,10 @@ namespace PCDataDLL
                 }
 
             }
-            catch (MySqlException)
+            catch (MySqlException e)
             {
+                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
                 return false;
             }
         }

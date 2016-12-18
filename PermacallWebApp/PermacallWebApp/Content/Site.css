@@ -33,9 +33,16 @@ textarea {
 .Channel {
     padding: 1px;
     margin: 1px;
+}
+.noLink {
     text-decoration: none;
     color: black;
 }
-.col-md-12.ChannelGroup {
-    padding-left: 22px;
+.ChannelGroup {
+    padding-left: 22px !IMPORTANT;
+}
+.Account {
+    border: black;
+    border-width: 1px;
+    border-radius: 3px;
 }

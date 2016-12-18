@@ -24,6 +24,7 @@ namespace PermacallWebApp.Models.ReturnModels
         public int AccountID { get; set; }
         public bool toEdit { get; set; }
         public bool isBot { get; set; }
+        public DateTime added { get; set; }
 
     }
 }

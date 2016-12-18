@@ -76,7 +76,7 @@ namespace PermacallWebApp.Controllers
 
             if (viewModel.ToChangeName != null && !currentUser.TSUsers.Any(x => x.NickName == viewModel.ToChangeName))
             {
-                Repos.TeamspeakUserRepo.EditTSUser(currentUser.TSUsers[id].TeamspeakDBID,
+                Repos.TeamspeakUserRepo.UpdateTSUser(currentUser.TSUsers[id].TeamspeakDBID,
                     new TSUser(currentUser.TSUsers[id].TeamspeakDBID, viewModel.ToChangeName, currentUser.ID));
             }
 
@@ -266,21 +266,54 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpGet]
-        public ActionResult ManageUsers()
+        public ActionResult ManageUsers(int Strike = -1)
         {
+            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
+                return RedirectToAction("Index", "Login");
+
+
+            if (Strike > -1)
+            {
+                AccountRepo.StrikeUser(Strike);
+                return RedirectToAction("ManageUsers");
+            }
+
             UserManagementModel returnModel = new UserManagementModel();
+            
+            List<User> accounts = AccountRepo.GetAllUsers();
+            List<TSUser> tsUsers = TeamspeakUserRepo.GetAllTSUsers();
+            foreach (var account in accounts)
+            {
+                DateTime strikeTime = DateTime.Now.AddMinutes(-15*Math.Pow(2, account.Strikes - 3.0).ToInt());
+                account.hasBeenStriked = account.LastStrike > strikeTime;
+                account.TSUsers.AddRange(tsUsers.FindAll(x => x.AccountID == account.ID));
+            }
 
-
-            return View();//TODO : TEST OMG
+            returnModel.UserList = accounts;
+            return View(returnModel);
         }
 
-        [HttpGet]
-        public ActionResult AdminManageAccounts()
+        [HttpPost]
+        public ActionResult ManageUsers(UserManagementModel model= null)
         {
-            UserManagementModel returnModel = new UserManagementModel();
+            if (model==null) return RedirectToAction("ManageUsers");
+            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.ADMIN)
+                return RedirectToAction("Index", "Login");
 
+            if (model.UserList.Count > 0)
+            {
+                AccountRepo.UpdateAccount(model.UserList[0]);
+                foreach (TSUser tsUser in model.UserList[0].TSUsers)
+                {
+                    TeamspeakUserRepo.UpdateTSUser(tsUser.TeamspeakDBID, tsUser);
+                }
+            }
 
-            return View();
+            return RedirectToAction("ManageUsers");
         }
     }
 }
