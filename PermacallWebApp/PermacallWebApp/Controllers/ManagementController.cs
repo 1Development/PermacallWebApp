@@ -51,7 +51,7 @@ namespace PermacallWebApp.Controllers
 
                         queryRunner.Logout();
                     }
-                    return RedirectToAction("Index", "Management", new { id = -1, a = 0});
+                    return RedirectToAction("Index", "Management", new { id = -1, a = 0 });
 
                 }
 
@@ -74,13 +74,13 @@ namespace PermacallWebApp.Controllers
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             currentUser.TSUsers = TeamspeakUserRepo.GetTeamspeakUsers(currentUser.ID);
 
-            if(viewModel.ToChangeName != null && !currentUser.TSUsers.Any(x => x.NickName == viewModel.ToChangeName))
+            if (viewModel.ToChangeName != null && !currentUser.TSUsers.Any(x => x.NickName == viewModel.ToChangeName))
             {
                 Repos.TeamspeakUserRepo.EditTSUser(currentUser.TSUsers[id].TeamspeakDBID,
                     new TSUser(currentUser.TSUsers[id].TeamspeakDBID, viewModel.ToChangeName, currentUser.ID));
             }
 
-            return RedirectToAction("Index", "Management", new { id = -1});
+            return RedirectToAction("Index", "Management", new { id = -1 });
         }
 
         [HttpGet]
@@ -168,13 +168,13 @@ namespace PermacallWebApp.Controllers
                                                 viewModel.ErrorMessage =
                                                 "This teamspeak user is already linked to another account";
                                             }
-                                            
-                                            
+
+
                                         }
-                                        
+
                                     }
                                 }
-                                
+
 
                             }
                         }
@@ -191,7 +191,7 @@ namespace PermacallWebApp.Controllers
                             Password = viewModel.Password
                         });
                     }
-                    
+
                     queryRunner.Logout();
                 }
             }
@@ -205,14 +205,17 @@ namespace PermacallWebApp.Controllers
         {
             Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if(CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER) return RedirectToAction("Index", "Login");
-            
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER)
+                return RedirectToAction("Index", "Login");
+
 
 
             ShowTeamSpeakModel returnModel = new ShowTeamSpeakModel();
 
             ListResponse<ChannelListEntry> channelList;
             ListResponse<ClientListEntry> clientList;
+            List<TSChannel> AllChanels = new List<TSChannel>();
+
             using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
             {
                 queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
@@ -222,12 +225,12 @@ namespace PermacallWebApp.Controllers
                 { // REAL EXCECUTED CODE
                     channelList = queryRunner.GetChannelList();
                     clientList = queryRunner.GetClientList();
-                }
 
+
+                }
                 queryRunner.Logout();
             }
 
-            List<TSChannel> AllChanels = new List<TSChannel>();
             foreach (var channelEntry in channelList)
             {
                 AllChanels.Add(new TSChannel()
@@ -245,12 +248,11 @@ namespace PermacallWebApp.Controllers
                 var clientsInChannel = clientList.Values.FindAll(x => x.ChannelId == channel.ChannelID);
                 foreach (ClientListEntry client in clientsInChannel)
                 {
-                    channel.TSUsers.Add(new TSUser() {NickName = client.Nickname, isBot = false /*client.ClientIP.IsNullOrTrimmedEmpty()*/});
+                    channel.TSUsers.Add(new TSUser() { NickName = client.Nickname, isBot = (client.ClientType == 1) });
                 }
             }
 
 
-            
             foreach (TSChannel channel in AllChanels)
             {
                 channel.Children.AddRange(AllChanels.FindAll(x => x.ParentID == channel.ChannelID));

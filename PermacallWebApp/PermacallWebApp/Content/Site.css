@@ -36,3 +36,6 @@ textarea {
     text-decoration: none;
     color: black;
 }
+.col-md-12.ChannelGroup {
+    padding-left: 22px;
+}

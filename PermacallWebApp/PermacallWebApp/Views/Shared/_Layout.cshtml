@@ -31,7 +31,6 @@
                     @if (currentUser.ID > 0)
                     {
                         @Html.LiActionLink("Manage Accounts", "Index", "Management")
-                        @Html.LiActionLink("Logout", "Logout", "Login")
                         if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
                         {
                             @Html.LiActionLink("Teamspeak", "ShowTeamspeak","Management")
@@ -59,7 +58,13 @@
                             </ul>
                         </li>
                     }
+
                     <li role="presentation"><a href="/tools/tools">Tools</a></li>
+
+                    @if (currentUser.ID > 0)
+                    {
+                        @Html.LiActionLink("Logout", "Logout", "Login")
+                    }
                 </ul>
             </div>
         </div>

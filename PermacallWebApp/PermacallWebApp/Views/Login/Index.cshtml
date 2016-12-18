@@ -3,8 +3,8 @@
 @model PermacallWebApp.Models.Account
 @{
     ViewBag.Title = "Login";
+    Model.PreviousPage = Model.PreviousPage;
 }
-
 <div class="row">
     @using (Html.BeginForm("Index", "Login", FormMethod.Post))
     {

@@ -5,7 +5,7 @@
 }
 @helper ChannelView(TSChannel toShowChannel)
 {
-    <div class="col-md-12">
+    <div class="col-md-12 ChannelGroup">
         @if (!toShowChannel.isSpacer)
         {
             <a href="#@toShowChannel.ChannelID" data-toggle="collapse">
@@ -14,7 +14,7 @@
         }
         else
         {
-            <p class="Channel"> </p>
+            <p class="Channel"> <br/> </p>
         }
         <div id="@toShowChannel.ChannelID" class="collapse in">
             @if (toShowChannel.TSUsers.Count > 0)

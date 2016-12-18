@@ -21,6 +21,7 @@ namespace PermacallWebApp.Models
         public string CheckPassword { get; set; }
 
         public string ErrorMessage { get; set; }
+        public string PreviousPage { get; set; }
 
     }
 }

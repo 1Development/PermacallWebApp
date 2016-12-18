@@ -16,11 +16,13 @@ namespace PermacallWebApp.Controllers
     public class LoginController : Controller
     {
         // GET: Login
-        public ActionResult Index()
+        public ActionResult Index(string prevPage = null)
         {
             Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
 
             Account viewModel = new Account();
+            if (prevPage != null)
+                viewModel.PreviousPage = prevPage;
 
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID > 0) return RedirectToAction("Index", "Management");
 
