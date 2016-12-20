@@ -6,6 +6,7 @@ using MySql.Data.MySqlClient;
 using PermacallWebApp.Models.ReturnModels;
 using PCDataDLL;
 using TS3QueryLib.Core;
+using TS3QueryLib.Core.CommandHandling;
 using TS3QueryLib.Core.Common;
 using TS3QueryLib.Core.Server;
 using TS3QueryLib.Core.Server.Entities;
@@ -14,10 +15,11 @@ namespace PermacallWebApp.Repos
 {
     public class AccountRepo
     {
+        private static DateTime lastCheck;
         public static Tuple<bool, string> GetSalt(string username)
         {
             GetAllUsers(); //TODO : REMOVE THIS
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"username", username.ToLower()}
             };
@@ -34,7 +36,7 @@ namespace PermacallWebApp.Repos
 
         public static bool CheckAvailable(string username)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"username", username.ToLower()}
             };
@@ -45,7 +47,7 @@ namespace PermacallWebApp.Repos
 
         public static Tuple<bool, string> ValidateCredentials(string username, string password)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"username", username.ToLower()},
                 {"password", password}
@@ -63,7 +65,7 @@ namespace PermacallWebApp.Repos
 
         public static bool SetSessionKey(string username, string sessionKey)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"sessionKey", sessionKey},
                 {"username", username.ToLower()}
@@ -75,7 +77,7 @@ namespace PermacallWebApp.Repos
 
         public static User GetUser(string sessionKey)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"sessionkey", sessionKey}
             };
@@ -102,7 +104,7 @@ namespace PermacallWebApp.Repos
 
         public static User GetUser(int id)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"id", id.ToString()}
             };
@@ -134,7 +136,7 @@ namespace PermacallWebApp.Repos
 
         public static bool InsertNewAccount(string username, string password, string salt)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"username", username.ToLower()},
                 {"password", password},
@@ -176,7 +178,7 @@ namespace PermacallWebApp.Repos
         public static bool UpdateAccount(User toEdit)
         {
             string sql = "UPDATE ACCOUNT SET PERMISSION=?, OPERATORCOUNT=?, STRIKES=? WHERE ID=?";
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"permission", toEdit.Permission.ToString()},
                 {"operatorCount", toEdit.OperatorCount.ToString()},
@@ -186,6 +188,24 @@ namespace PermacallWebApp.Repos
             var result = DB.MainDB.InsertQuery(sql, parameters);
 
             return result;
+        }
+
+        public static bool DeleteAccount(int accountID)
+        {
+            string Accountsql = "UPDATE ACCOUNT SET ENABLED=0 WHERE ID=?";
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"id", accountID.ToString()},
+            };
+            var result = DB.MainDB.UpdateQuery(Accountsql, parameters);
+
+            var tsUsers = TeamspeakUserRepo.GetTeamspeakUsers(accountID);
+
+            string teamspeakSQL = "UPDATE TEAMSPEAKUSER SET ENABLED = 0 WHERE ACCOUNTID=?";
+
+            var result2 = DB.MainDB.UpdateQuery(teamspeakSQL, parameters);
+
+            return result && result2;
         }
 
         public static bool StrikeUser(int userID)
@@ -198,12 +218,12 @@ namespace PermacallWebApp.Repos
             toStrikeUser.TSUsers = TeamspeakUserRepo.GetTeamspeakUsers(userID);
             toStrikeUser.Strikes += 1;
             string sql = "UPDATE ACCOUNT SET LASTSTRIKE=CURRENT_TIMESTAMP, STRIKES=? WHERE ID=?";
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"strikes", (toStrikeUser.Strikes).ToString()},
                 {"id", toStrikeUser.ID.ToString()}
             };
-            //var accountUpdateResult = DB.MainDB.UpdateQuery(sql, parameters);
+            var accountUpdateResult = DB.MainDB.UpdateQuery(sql, parameters);
             int banMinutes = -1;
             if (toStrikeUser.Strikes - 3 >= 0)
                 banMinutes = 15 * Math.Pow(2, toStrikeUser.Strikes - 3.0).ToInt();
@@ -218,25 +238,26 @@ namespace PermacallWebApp.Repos
                     var AllClients = queryRunner.GetClientList();
                     foreach (TSUser tsUser in toStrikeUser.TSUsers)
                     {
-                        var resultClient = queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                            new ClientModification { Description = "TESTOMGGG" });
-
-
                         var foundClient =
                             AllClients.FirstOrDefault(x => x.ClientDatabaseId == tsUser.TeamspeakDBID.ToUInt());
 
-                        //queryRunner.AddBanRule(null,null,queryRunner.GetClientNameAndUniqueIdByClientDatabaseId(tsUser.ToUInt()).ClientUniqueId)
+                        var uniqueClient = queryRunner.GetClientNameAndUniqueIdByClientDatabaseId(tsUser.TeamspeakDBID.ToUInt());
+                        if (uniqueClient.ClientUniqueId != null && banMinutes > 0)
+                            queryRunner.AddBanRule(null, null, uniqueClient.ClientUniqueId, new TimeSpan(0, 0, banMinutes, 0, 0),
+                                "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
+                                    " strikes.");
 
 
                         queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
                             new ClientModification() { Description = "Strikes : " + toStrikeUser.Strikes });
-                        if (banMinutes > 0)
+                        if (banMinutes > 0 && foundClient != null)
                         {
-                            if (foundClient != null)
-                                queryRunner.PokeClient(tsUser.TeamspeakDBID.ToUInt(),
+                            queryRunner.BanClient(foundClient.ClientId, new TimeSpan(0, 0, banMinutes, 0, 0),
                                 "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
                                 " strikes.");
-                            queryRunner.BanClient(tsUser.TeamspeakDBID.ToUInt(), new TimeSpan(0, 0, banMinutes, 0, 0));
+                            queryRunner.PokeClient(foundClient.ClientId,
+                                "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
+                                " strikes.");
                         }
                         else
                         {
@@ -247,14 +268,71 @@ namespace PermacallWebApp.Repos
                     }
                     if (banMinutes > 0)
                         queryRunner.SendGlobalMessage(toStrikeUser.Username + " has been banned for " + banMinutes +
-                                                             " for having " + toStrikeUser.Strikes + " strikes");
+                                                             " minutes for having " + toStrikeUser.Strikes + " strikes");
+                }
+                queryRunner.Logout();
+            }
+            return true;
+        }
+
+        public static bool StrikeReductionCheck()
+        {
+            if (!(lastCheck == null || lastCheck < DateTime.Now.AddDays(-1)))
+                return false;
+            List<User> userList = GetAllUsers();
+            List<TSUser> tsUserList = TeamspeakUserRepo.GetAllTSUsers();
+            List<TSUser> toEditTSUsers = new List<TSUser>();
+            string sql = "UPDATE ACCOUNT SET LASTSTRIKE=?, STRIKES=? WHERE ID=?";
+            foreach (User user in userList)
+            {
+                if (user.Strikes > 0 && user.LastStrike <= DateTime.Now.AddDays(-30))
+                {
+                    user.Strikes--;
+                    user.TSUsers.AddRange(tsUserList.FindAll(x => x.AccountID == user.ID));
+                    foreach (TSUser tsUser in user.TSUsers)
+                    {
+                        tsUser.account = user;
+                        toEditTSUsers.Add(tsUser);
+                    }
+                    Dictionary<string, object> parameters = new Dictionary<string, object>()
+                    {
+                        {"laststrike", DateTime.Now.AddDays(-23)},
+                        {"strikes", user.Strikes},
+                        {"id", user.ID}
+                    };
+                    DB.MainDB.UpdateQuery(sql, parameters);
+                }
+            }
+
+            using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+            {
+                queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
+                queryRunner.SelectVirtualServerById(1);
+                queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
+
+                { // REAL EXCECUTED CODE
+                    var AllClients = queryRunner.GetClientList();
+                    foreach (TSUser tsUser in toEditTSUsers)
+                    {
+                        var foundClient =
+                            AllClients.FirstOrDefault(x => x.ClientDatabaseId == tsUser.TeamspeakDBID.ToUInt());
+
+                        var uniqueClient = queryRunner.GetClientNameAndUniqueIdByClientDatabaseId(tsUser.TeamspeakDBID.ToUInt());
+
+                        queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
+                            new ClientModification() { Description = "Strikes : " + tsUser.account.Strikes });
+                        if (foundClient != null)
+                        {
+                            queryRunner.SendTextMessage(MessageTarget.Client, foundClient.ClientId,
+                                "You have had one strike removed, you now have: " + tsUser.account.Strikes + " strikes left");
+                        }
+                    }
                 }
                 queryRunner.Logout();
             }
 
-
-            return false;
-
+            lastCheck = DateTime.Now;
+            return true;
         }
 
 

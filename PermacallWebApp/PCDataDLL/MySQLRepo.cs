@@ -13,10 +13,10 @@ namespace PCDataDLL
             this.ConnectionString = connectionString;
         }
 
-        public bool CheckExist(string SQLquery, Dictionary<string, string> parameters)
+        public bool CheckExist(string SQLquery, Dictionary<string, object> parameters)
         {
             if (parameters == null)
-                parameters = new Dictionary<string, string>();
+                parameters = new Dictionary<string, object>();
 
             string sql = SQLquery;
             foreach (var parameter in parameters)
@@ -34,6 +34,7 @@ namespace PCDataDLL
 
                         foreach (var parameter in parameters)
                         {
+
                             cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
                         }
 
@@ -55,10 +56,10 @@ namespace PCDataDLL
             }
         }
 
-        public DBResult GetOneResultQuery(string SQLquery, Dictionary<string, string> parameters)
+        public DBResult GetOneResultQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             if (parameters == null)
-                parameters = new Dictionary<string, string>();
+                parameters = new Dictionary<string, object>();
 
             string sql = SQLquery;
             foreach (var parameter in parameters)
@@ -103,10 +104,10 @@ namespace PCDataDLL
             }
         }
 
-        public List<DBResult> GetMultipleResultsQuery(string SQLquery, Dictionary<string, string> parameters)
+        public List<DBResult> GetMultipleResultsQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             if (parameters == null)
-                parameters = new Dictionary<string, string>();
+                parameters = new Dictionary<string, object>();
 
             string sql = SQLquery;
             foreach (var parameter in parameters)
@@ -152,10 +153,10 @@ namespace PCDataDLL
             }
         }
 
-        public bool UpdateQuery(string SQLquery, Dictionary<string, string> parameters)
+        public bool UpdateQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             if (parameters == null)
-                parameters = new Dictionary<string, string>();
+                parameters = new Dictionary<string, object>();
 
             string sql = SQLquery;
             foreach (var parameter in parameters)
@@ -189,11 +190,11 @@ namespace PCDataDLL
             }
         }
 
-        public bool DeleteQuery(string SQLquery, Dictionary<string, string> parameters)
+        public bool DeleteQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             return UpdateQuery(SQLquery, parameters);
         }
-        public bool InsertQuery(string SQLquery, Dictionary<string, string> parameters)
+        public bool InsertQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             return UpdateQuery(SQLquery, parameters);
         }

@@ -1,7 +1,10 @@
-﻿@using PermacallWebApp.Models.ReturnModels
+﻿@using PermacallWebApp.Logic
+@using PermacallWebApp.Models.ReturnModels
+@using PermacallWebApp.Repos
 @model PermacallWebApp.Models.ViewModels.UserManagementModel
 @{
     ViewBag.Title = "ManageUsers";
+    User currentUser = Login.GetCurrentUser(HttpContext.Current);
 }
 
 <div class="row">
@@ -38,22 +41,36 @@
                                 <th>@Html.ValueFor(Model => Model.UserList[i].Username)</th>
                                 <th>@Html.EditorFor(Model => Model.UserList[i].OperatorCount)</th>
                                 <th>@Html.EditorFor(Model => Model.UserList[i].Strikes)</th>
-                                <th>@Html.EnumDropDownListFor(Model => Model.UserList[i].Permission)</th>
-                                @if (!Model.UserList[i].hasBeenStriked)
+                                @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
                                 {
-                                    <th><button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button></th>
+                                    <th>@Html.EnumDropDownListFor(Model => Model.UserList[i].Permission)</th>
                                 }
                                 else
                                 {
-                                    <th><button type="button" class="btn btn-danger disabled " onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button></th>
+                                    <th>@Html.ValueFor(Model => Model.UserList[i].Permission)</th>
+                                    @Html.HiddenFor(m => m.UserList[i].ID)
                                 }
+                                <th>
+                                    @if (!Model.UserList[i].hasBeenStriked)
+                                    {
+                                        <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-danger disabled " onclick="location.href ='#'">
+                                            STRIKE
+                                        </button>
+                                    }
+                                    <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Delete = Model.UserList[i].ID})'">DELETE</button>
+                                </th>
                             </tr>
                         </tbody>
                     </table>
-                    <h3>Teamspeak Users:</h3>
-                    for (int j = 0; j < Model.UserList[i].TSUsers.Count; j++)
+
+                    if (user.TSUsers != null && user.TSUsers.Count > 0)
                     {
-                        TSUser tsUser = user.TSUsers[j];
+                        <h3>Teamspeak Users:</h3>
+
                         <table class="table table-bordered" style="max-width: 100%">
                             <thead>
                                 <tr style="background-color: rgba(255, 255, 255, 0.2);">
@@ -62,16 +79,25 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
-                                    <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
-                                    <th></th>
-                                </tr>
-                            </tbody>
-                        </table>
+                            @for (int j = 0; j < Model.UserList[i].TSUsers.Count; j++)
+                            {
+                                TSUser tsUser = user.TSUsers[j];
 
+                                <tbody>
+                                    <tr>
+                                        <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
+                                        <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
+                                        <th><button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {disableTSUser = Model.UserList[i].TSUsers[j].TeamspeakDBID})'">REMOVE</button></th>
+                                    </tr>
+                                </tbody>
+                            }
+                        </table>
                     }
+                    else
+                    {
+                        <h4>No teamspeak users linked to this account</h4>
+                    }
+
                     <div class="col-md-4 col-md-offset-8 col-sm-6 col-sm-offset-6">
                         <input type="submit" value="Save" class="btn btn-primary" style="width: 100%; position: relative; top: 6px;" />
                     </div>

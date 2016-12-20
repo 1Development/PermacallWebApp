@@ -22,6 +22,7 @@ namespace PermacallWebApp.Models.ReturnModels
         public string NickName { get; set; }
         public string TeamspeakDBID { get; set; }
         public int AccountID { get; set; }
+        public User account { get; set; }
         public bool toEdit { get; set; }
         public bool isBot { get; set; }
         public DateTime added { get; set; }

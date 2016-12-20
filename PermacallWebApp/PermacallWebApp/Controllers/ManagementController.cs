@@ -25,7 +25,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult Index(int id = -1, int a = 0)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             ManagementModel viewModel = new ManagementModel();
@@ -39,20 +39,8 @@ namespace PermacallWebApp.Controllers
             {
                 if (a == -1)
                 {
-                    using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
-                    {
-                        queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
-                        queryRunner.SelectVirtualServerById(1);
-                        queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
-
-                        TeamspeakUserRepo.DisableTSUser(currentUser.TSUsers[id].TeamspeakDBID);
-                        queryRunner.DeleteClientFromServerGroup(9,
-                            Convert.ToUInt32(currentUser.TSUsers[id].TeamspeakDBID));
-
-                        queryRunner.Logout();
-                    }
-                    return RedirectToAction("Index", "Management", new { id = -1, a = 0 });
-
+                    Teamspeak.DisableTeamspeakUser(currentUser.TSUsers[id].TeamspeakDBID);
+                    return RedirectToAction("Index", "Management");
                 }
 
                 currentUser.TSUsers[id].toEdit = true;
@@ -68,7 +56,7 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult Index(ManagementModel viewModel, int id = -1)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
@@ -266,17 +254,27 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpGet]
-        public ActionResult ManageUsers(int Strike = -1)
+        public ActionResult ManageUsers(int strike = -1, string disableTSUser = null, int delete = -1)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            if(!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission <= Models.ReturnModels.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
 
 
-            if (Strike > -1)
+            if (strike > -1)
             {
-                AccountRepo.StrikeUser(Strike);
+                AccountRepo.StrikeUser(strike);
+                return RedirectToAction("ManageUsers");
+            }
+            if (disableTSUser != null)
+            {
+                Teamspeak.DisableTeamspeakUser(disableTSUser);
+                return RedirectToAction("ManageUsers");
+            }
+            if (delete >-1)
+            {
+                AccountRepo.DeleteAccount(delete);
                 return RedirectToAction("ManageUsers");
             }
 
@@ -298,10 +296,10 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult ManageUsers(UserManagementModel model= null)
         {
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             if (model==null) return RedirectToAction("ManageUsers");
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.ADMIN)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission <= Models.ReturnModels.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
 
             if (model.UserList.Count > 0)

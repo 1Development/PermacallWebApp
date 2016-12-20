@@ -12,7 +12,7 @@ namespace PermacallWebApp.Repos
     {
         public static List<TSUser> GetTeamspeakUsers(int accountID)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"accountid", accountID.ToString() }
             };
@@ -38,7 +38,7 @@ namespace PermacallWebApp.Repos
         }
         public static bool TSUserAvailable(string DBID)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"teamspeakid", DBID }
             };
@@ -53,7 +53,7 @@ namespace PermacallWebApp.Repos
 
         public static bool AddTeamspeakUserToAccount(TSUser toAddUser)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"teamspeakid", toAddUser.TeamspeakDBID},
                 {"accountid", toAddUser.AccountID.ToString()},
@@ -66,7 +66,7 @@ namespace PermacallWebApp.Repos
 
         public static bool UpdateTSUser(string teamspeakid, TSUser editResult)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"newteamspeakid", editResult.TeamspeakDBID},
                 {"accountid", editResult.AccountID.ToString() },
@@ -79,11 +79,11 @@ namespace PermacallWebApp.Repos
             return result;
         }
 
-        public static bool DisableTSUser(string teamspeakid)
+        public static bool DisableTSUser(string teamspeakDBID)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>()
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"teamspeakid", teamspeakid}
+                {"teamspeakid", teamspeakDBID}
             };
             var result = DB.MainDB.UpdateQuery("UPDATE TEAMSPEAKUSER SET ENABLED = 0 WHERE TEAMSPEAKDBID = ?", parameters);
 

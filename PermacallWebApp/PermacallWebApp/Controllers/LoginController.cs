@@ -18,7 +18,7 @@ namespace PermacallWebApp.Controllers
         // GET: Login
         public ActionResult Index(string prevPage = null)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
 
             Account viewModel = new Account();
             if (prevPage != null)
@@ -33,7 +33,7 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult Index(Account account)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
 
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID > 0) return RedirectToAction("Index", "Management");
 
@@ -54,7 +54,7 @@ namespace PermacallWebApp.Controllers
         // GET: Login/Register
         public ActionResult Register()
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
 
             Account viewModel = new Account();
 
@@ -66,7 +66,7 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult Register(Account account)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
 
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID > 0) return RedirectToAction("Index", "Management");
 
