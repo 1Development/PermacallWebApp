@@ -15,5 +15,10 @@ namespace PermacallWebApp.Models
 	    public User CurrentUser  { get; set; }
 	    public string ToChangeName { get; set; }
 	    public int ToChangeID { get; set; }
+
+	    public ManagementModel()
+	    {
+	        Users = new ListResponse<ClientListEntry>();
+	    }
 	}
 }

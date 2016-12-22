@@ -10,6 +10,10 @@
     padding-right: 15px;
 }
 
+.modal-header {
+    background-color: #8B0000 !important;
+ }
+
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,

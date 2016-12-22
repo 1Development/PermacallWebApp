@@ -1,6 +1,5 @@
 ﻿@using PermacallWebApp.Logic
 @using PermacallWebApp.Models.ReturnModels
-@using PermacallWebApp.Repos
 @model PermacallWebApp.Models.ViewModels.UserManagementModel
 @{
     ViewBag.Title = "ManageUsers";
@@ -10,103 +9,144 @@
 <div class="row">
     <div class="contentBox form-horizontal col-md-12" style="margin-top: 50px;">
 
-        <h2>Manage Users</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Manage Users</h2>
+            </div>
+        </div>
+
         <br />
-
-        @for (int i = 0; i < Model.UserList.Count; i++)
+        @using (@Html.BeginForm("ManageUsers", "Management", FormMethod.Post))
         {
-            User user = Model.UserList[i];
+            if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            {
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-6 text-right">
+                        <div class="col-md-4 col-md-offset-8 col-sm-6 col-sm-offset-6">
+                            <input type="submit" value="Save" class="btn btn-primary" style="width: 100%; position: relative; top: 6px;" />
+                        </div>
+                    </div>
+                </div>
+            }
 
-            <a href="#@user.ID" data-toggle="collapse">
-                <h3 class="noLink">@user.Username</h3>
-            </a>
-            <div id="@user.ID" class="collapse">
-                @using (Html.BeginForm("ManageUsers", "Management", FormMethod.Post, new { user = user.ID }))
-                {
-                    <table class="table table-bordered" style="max-width: 100%">
-                        <thead>
-                            <tr style="background-color: rgba(255, 255, 255, 0.2);">
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Operator Count</th>
-                                <th>Strikes</th>
-                                <th>Permission</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                @Html.HiddenFor(m => m.UserList[i].ID)
-                                <th>@Html.ValueFor(Model => Model.UserList[i].ID)</th>
-                                <th>@Html.ValueFor(Model => Model.UserList[i].Username)</th>
-                                <th>@Html.EditorFor(Model => Model.UserList[i].OperatorCount)</th>
-                                <th>@Html.EditorFor(Model => Model.UserList[i].Strikes)</th>
-                                @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
-                                {
-                                    <th>@Html.EnumDropDownListFor(Model => Model.UserList[i].Permission)</th>
-                                }
-                                else
-                                {
-                                    <th>@Html.ValueFor(Model => Model.UserList[i].Permission)</th>
-                                    @Html.HiddenFor(m => m.UserList[i].ID)
-                                }
-                                <th>
-                                    @if (!Model.UserList[i].hasBeenStriked)
-                                    {
-                                        <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button>
-                                    }
-                                    else
-                                    {
-                                        <button type="button" class="btn btn-danger disabled " onclick="location.href ='#'">
-                                            STRIKE
-                                        </button>
-                                    }
-                                    <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Delete = Model.UserList[i].ID})'">DELETE</button>
-                                </th>
-                            </tr>
-                        </tbody>
-                    </table>
+            for (int i = 0; i < Model.UserList.Count; i++)
+            {
+                User user = Model.UserList[i];
 
-                    if (user.TSUsers != null && user.TSUsers.Count > 0)
-                    {
-                        <h3>Teamspeak Users:</h3>
-
+                <a class="text-center" href="#@user.ID" data-toggle="collapse" onclick="checkCollapsed(@user.ID)">
+                    <h3 class="noLink">@user.Username</h3>
+                </a>
+                <div id="@user.ID" class="collapse">
+                    <div class="table-responsive">
                         <table class="table table-bordered" style="max-width: 100%">
                             <thead>
                                 <tr style="background-color: rgba(255, 255, 255, 0.2);">
-                                    <th>Nickname</th>
-                                    <th>Added</th>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Operator Count</th>
+                                    <th>Strikes</th>
+                                    <th>Permission</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            @for (int j = 0; j < Model.UserList[i].TSUsers.Count; j++)
-                            {
-                                TSUser tsUser = user.TSUsers[j];
-
-                                <tbody>
-                                    <tr>
-                                        <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
-                                        <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
-                                        <th><button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {disableTSUser = Model.UserList[i].TSUsers[j].TeamspeakDBID})'">REMOVE</button></th>
-                                    </tr>
-                                </tbody>
-                            }
+                            <tbody>
+                                <tr>
+                                    @Html.HiddenFor(m => m.UserList[i].ID)
+                                    @Html.HiddenFor(m => m.UserList[i].toEdit, new { id = "Edit" + user.ID })
+                                    <th>@Html.ValueFor(Model => Model.UserList[i].ID)</th>
+                                    <th>@Html.ValueFor(Model => Model.UserList[i].Username)</th>
+                                    <th>@Html.EditorFor(Model => Model.UserList[i].OperatorCount)</th>
+                                    @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                    {
+                                        <th>@Html.EditorFor(Model => Model.UserList[i].Strikes)</th>
+                                        <th>@Html.EnumDropDownListFor(Model => Model.UserList[i].Permission)</th>
+                                    }
+                                    else
+                                    {
+                                        <th>@Html.ValueFor(Model => Model.UserList[i].Strikes)</th>
+                                        <th>@Html.ValueFor(Model => Model.UserList[i].Permission)</th>
+                                    }
+                                    <th>
+                                        @if (!Model.UserList[i].hasBeenStriked)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {Strike = Model.UserList[i].ID})'">STRIKE</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-danger disabled " onclick="location.href = '\#'">
+                                                STRIKE
+                                            </button>
+                                        }
+                                        @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="
+                                                    location.href='@Url.Action("ManageUsers", "Management", new {Delete = Model.UserList[i].ID})' ">
+                                                DELETE
+                                            </button>
+                                        }
+                                    </th>
+                                </tr>
+                            </tbody>
                         </table>
+                    </div>
+                    @if (user.TSUsers != null && user.TSUsers.Count > 0)
+                    {
+                        <h4>Teamspeak Users:</h4>
+
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered" style="max-width: 100%">
+                                <thead>
+                                    <tr style="background-color: rgba(255, 255, 255, 0.2);">
+                                        <th>Nickname</th>
+                                        <th>Added</th>
+                                        @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                        {
+                                            <th>Actions</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                @for (int j = 0; j < Model.UserList[i].TSUsers.Count; j++)
+                                {
+                                    TSUser tsUser = user.TSUsers[j];
+
+                                    <tbody>
+                                        <tr>
+                                            <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
+                                            <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
+                                            @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                            {
+                                                <th>
+                                                    <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {disableTSUser = Model.UserList[i].TSUsers[j].TeamspeakDBID})'">
+                                                        REMOVE
+                                                    </button>
+                                                </th>
+                                            }
+                                        </tr>
+                                    </tbody>
+                                }
+                            </table>
+                        </div>
                     }
                     else
                     {
                         <h4>No teamspeak users linked to this account</h4>
                     }
-
-                    <div class="col-md-4 col-md-offset-8 col-sm-6 col-sm-offset-6">
-                        <input type="submit" value="Save" class="btn btn-primary" style="width: 100%; position: relative; top: 6px;" />
-                    </div>
-                }
-            </div>
-
+                </div>
+            }
 
 
 
         }
     </div>
 </div>
+
+<script>
+    function checkCollapsed(ID) {
+        document.getElementById('Edit' + ID).value = !hasClass(document.getElementById(ID + ''), 'in');
+    }
+
+    function hasClass(element, cls) {
+        return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+    }
+</script>

@@ -42,6 +42,7 @@ namespace PermacallWebApp.Models.ReturnModels
         public int Strikes { get; set; }
         public DateTime LastStrike { get; set; }
         public bool hasBeenStriked { get; set; }
+        public bool toEdit { get; set; }
 
 
         public List<TSUser> TSUsers { get; set; }

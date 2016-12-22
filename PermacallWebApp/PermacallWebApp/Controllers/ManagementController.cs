@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.Versioning;
 using System.Web;
 using System.Web.Mvc;
@@ -74,7 +75,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult AddUser(int a = 0, int kick = 0)
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
@@ -95,92 +96,105 @@ namespace PermacallWebApp.Controllers
             if (a >= 1)
             {
                 viewModel.StartedAdding = true;
-                using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+                try
                 {
-                    queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
-                    queryRunner.SelectVirtualServerById(1);
-                    queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
-
-                    var channels = queryRunner.GetChannelList();
-
-                    if (channels.Any(x => x.Name == viewModel.ChannelName))
+                    using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
                     {
-                        if (a >= 2 || kick == 1)
+                        queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
+                        queryRunner.SelectVirtualServerById(1);
+                        queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
+
+                        var channels = queryRunner.GetChannelList();
+
+                        if (channels.Any(x => x.Name == viewModel.ChannelName))
                         {
-                            var channelID = channels.First(x => x.Name == viewModel.ChannelName).ChannelId;
-                            var allClients = queryRunner.GetClientList();
-                            var targetClient = allClients.Where(entry => entry.ChannelId == channelID);
-                            if (targetClient.Any())
+                            if (a >= 2 || kick == 1)
                             {
-                                if (kick == 1)
+                                var channelID = channels.First(x => x.Name == viewModel.ChannelName).ChannelId;
+                                var allClients = queryRunner.GetClientList();
+                                var targetClient = allClients.Where(entry => entry.ChannelId == channelID);
+                                if (targetClient.Any())
                                 {
-                                    try
+                                    if (kick == 1)
                                     {
-                                        queryRunner.BanClient(targetClient.First().ClientId,
-                                            new TimeSpan(0, 0, 0, 10, 0));
-                                    }
-                                    catch (FormatException)
-                                    {
-                                    }
-
-                                    viewModel.ErrorMessage =
-                                        "The user has been kicked and temporarilly banned from the server, please try again.";
-                                }
-                                else
-                                {
-                                    viewModel.TSName = targetClient.First().Nickname;
-                                    viewModel.ChannelEmpty = false;
-
-                                    if (a >= 3)
-                                    {
-                                        if (currentUser.TSUsers.Any(x => x.TeamspeakDBID == targetClient.First().ClientDatabaseId.ToString()))
+                                        try
                                         {
-                                            viewModel.ErrorMessage =
-                                                "You already have that teamspeak user bound to your account";
+                                            queryRunner.BanClient(targetClient.First().ClientId,
+                                                new TimeSpan(0, 0, 0, 10, 0));
                                         }
-                                        else
+                                        catch (FormatException)
                                         {
-                                            TSUser toAddUser = new TSUser();
-                                            toAddUser.TeamspeakDBID = targetClient.First().ClientDatabaseId.ToString();
-                                            toAddUser.NickName = targetClient.First().Nickname;
-                                            toAddUser.AccountID = currentUser.ID;
-                                            if (TeamspeakUserRepo.TSUserAvailable(toAddUser.TeamspeakDBID))
+                                        }
+
+                                        viewModel.ErrorMessage =
+                                            "The user has been kicked and temporarilly banned from the server, please try again.";
+                                    }
+                                    else
+                                    {
+                                        viewModel.TSName = targetClient.First().Nickname;
+                                        viewModel.ChannelEmpty = false;
+
+                                        if (a >= 3)
+                                        {
+                                            if (
+                                                currentUser.TSUsers.Any(
+                                                    x =>
+                                                        x.TeamspeakDBID ==
+                                                        targetClient.First().ClientDatabaseId.ToString()))
                                             {
-                                                TeamspeakUserRepo.AddTeamspeakUserToAccount(toAddUser);
-                                                viewModel.UserAdded = true;
-                                                queryRunner.AddClientToServerGroup(9, targetClient.First().ClientDatabaseId);
-                                                queryRunner.DeleteChannel(channelID, true);
+                                                viewModel.ErrorMessage =
+                                                    "You already have that teamspeak user bound to your account";
                                             }
                                             else
                                             {
-                                                viewModel.ErrorMessage =
-                                                "This teamspeak user is already linked to another account";
+                                                TSUser toAddUser = new TSUser();
+                                                toAddUser.TeamspeakDBID =
+                                                    targetClient.First().ClientDatabaseId.ToString();
+                                                toAddUser.NickName = targetClient.First().Nickname;
+                                                toAddUser.AccountID = currentUser.ID;
+                                                if (TeamspeakUserRepo.TSUserAvailable(toAddUser.TeamspeakDBID))
+                                                {
+                                                    TeamspeakUserRepo.AddTeamspeakUserToAccount(toAddUser);
+                                                    viewModel.UserAdded = true;
+                                                    queryRunner.AddClientToServerGroup(9,
+                                                        targetClient.First().ClientDatabaseId);
+                                                    queryRunner.DeleteChannel(channelID, true);
+                                                }
+                                                else
+                                                {
+                                                    viewModel.ErrorMessage =
+                                                        "This teamspeak user is already linked to another account";
+                                                }
+
+
                                             }
 
-
                                         }
-
                                     }
+
+
                                 }
-
-
                             }
                         }
-                    }
-                    else
-                    {
-                        queryRunner.CreateChannel(new ChannelModification()
+                        else
                         {
+                            queryRunner.CreateChannel(new ChannelModification()
+                            {
 
-                            IsTemporary = true,
-                            ChannelOrder = 186,
-                            MaxClients = 1,
-                            Name = currentUser.Username,
-                            Password = viewModel.Password
-                        });
+                                IsTemporary = true,
+                                ChannelOrder = 186,
+                                MaxClients = 1,
+                                Name = currentUser.Username,
+                                Password = viewModel.Password
+                            });
+                        }
+
+                        queryRunner.Logout();
                     }
-
-                    queryRunner.Logout();
+                }
+                catch (SocketException e)
+                {
+                    viewModel.ErrorMessage = "Teamspeak server appears to be down";
                 }
             }
 
@@ -191,7 +205,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult ShowTeamspeak()
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, false);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER)
                 return RedirectToAction("Index", "Login");
@@ -203,20 +217,28 @@ namespace PermacallWebApp.Controllers
             ListResponse<ChannelListEntry> channelList;
             ListResponse<ClientListEntry> clientList;
             List<TSChannel> AllChanels = new List<TSChannel>();
-
-            using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+            try
             {
-                queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
-                queryRunner.SelectVirtualServerById(1);
-                queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
+                using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+                {
+                    queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
+                    queryRunner.SelectVirtualServerById(1);
+                    queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
 
-                { // REAL EXCECUTED CODE
-                    channelList = queryRunner.GetChannelList();
-                    clientList = queryRunner.GetClientList();
+                    {
+                        // REAL EXCECUTED CODE
+                        channelList = queryRunner.GetChannelList();
+                        clientList = queryRunner.GetClientList();
 
 
+                    }
+                    queryRunner.Logout();
                 }
-                queryRunner.Logout();
+            }
+            catch (SocketException)
+            {
+                channelList = new ListResponse<ChannelListEntry>();
+                clientList = new ListResponse<ClientListEntry>();
             }
 
             foreach (var channelEntry in channelList)
@@ -234,9 +256,12 @@ namespace PermacallWebApp.Controllers
             foreach (TSChannel channel in AllChanels)
             {
                 var clientsInChannel = clientList.Values.FindAll(x => x.ChannelId == channel.ChannelID);
-                foreach (ClientListEntry client in clientsInChannel)
+                if (!channel.isSpacer)
                 {
-                    channel.TSUsers.Add(new TSUser() { NickName = client.Nickname, isBot = (client.ClientType == 1) });
+                    foreach (ClientListEntry client in clientsInChannel)
+                    {
+                        channel.TSUsers.Add(new TSUser() {NickName = client.Nickname, isBot = (client.ClientType == 1)});
+                    }
                 }
             }
 
@@ -256,9 +281,9 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult ManageUsers(int strike = -1, string disableTSUser = null, int delete = -1)
         {
-            if(!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission <= Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
 
 
@@ -269,12 +294,14 @@ namespace PermacallWebApp.Controllers
             }
             if (disableTSUser != null)
             {
+                if(CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
                 Teamspeak.DisableTeamspeakUser(disableTSUser);
                 return RedirectToAction("ManageUsers");
             }
             if (delete >-1)
             {
-                AccountRepo.DeleteAccount(delete);
+                if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
+                    AccountRepo.DeleteAccount(delete);
                 return RedirectToAction("ManageUsers");
             }
 
@@ -294,20 +321,34 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpPost]
-        public ActionResult ManageUsers(UserManagementModel model= null)
-        {
+        public ActionResult ManageUsers(UserManagementModel model= null, int id = -1)
+        { //TODO: FOREACH CHECK IF DIFFERENT STATEMENT
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
-            if (model==null) return RedirectToAction("ManageUsers");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission <= Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
 
-            if (model.UserList.Count > 0)
+            if (model == null) return RedirectToAction("ManageUsers");
+
+            if (model.UserList.Count > 0 && CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.OPERATOR)
             {
-                AccountRepo.UpdateAccount(model.UserList[0]);
-                foreach (TSUser tsUser in model.UserList[0].TSUsers)
                 {
-                    TeamspeakUserRepo.UpdateTSUser(tsUser.TeamspeakDBID, tsUser);
+                    foreach (User user in model.UserList.Where(x => x.toEdit))
+                    {
+                        if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
+                        {
+                            AccountRepo.SetStrikeCount(user.ID, user.Strikes);
+                            AccountRepo.UpdateAccount(user);
+                        }
+                        if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.OPERATOR)
+                        {
+                            AccountRepo.SetAccountOperatorCount(user.ID, user.OperatorCount);
+                        }
+                        //foreach (TSUser tsUser in user.TSUsers)
+                        //{
+                        //    TeamspeakUserRepo.UpdateTSUser(tsUser.TeamspeakDBID, tsUser);
+                        //}
+                    }
                 }
             }
 

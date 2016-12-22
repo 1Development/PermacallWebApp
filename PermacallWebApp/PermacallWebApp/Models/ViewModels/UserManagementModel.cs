@@ -11,5 +11,10 @@ namespace PermacallWebApp.Models.ViewModels
     public class UserManagementModel
     {
         public List<User> UserList { get; set; }
+
+        public UserManagementModel()
+        {
+            UserList = new List<User>();
+        }
     }
 }

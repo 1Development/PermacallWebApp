@@ -84,17 +84,17 @@ namespace PermacallWebApp.Controllers
                         }
                         else
                         {
-                            account.ErrorMessage = "Username is not available";
+                            ViewBag.Error = "Username is not available";
                         }
                     }
                     else
                     {
-                        account.ErrorMessage = "Username cannot contain spaces";
+                        ViewBag.Error = "Username cannot contain spaces";
                     }
                 }
                 else
                 {
-                    account.ErrorMessage = "Passwords don't match!";
+                    ViewBag.Error = "Passwords don't match!";
                 }
             }
 
@@ -104,13 +104,13 @@ namespace PermacallWebApp.Controllers
 
         public ActionResult RegisterSuccesfull()
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             return View();
         }
 
         public ActionResult Logout()
         {
-            Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true);
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
 
             string[] allCookies = HttpContext.Request.Cookies.AllKeys;
             foreach (string cookie in allCookies)

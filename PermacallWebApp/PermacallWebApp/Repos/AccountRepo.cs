@@ -23,7 +23,7 @@ namespace PermacallWebApp.Repos
             {
                 {"username", username.ToLower()}
             };
-            var result = PCDataDLL.DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
+            var result = PCDataDLL.DB.MainDB.GetOneResultQuery("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ? AND ENABLED=1", parameters);
 
             if (result != null && result.Get("SALT") != null)
                 return new Tuple<bool, string>(true, result.Get("SALT"));
@@ -52,7 +52,7 @@ namespace PermacallWebApp.Repos
                 {"username", username.ToLower()},
                 {"password", password}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID FROM ACCOUNT WHERE LOWER(USERNAME) = ? AND PASSWORD = ?", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID FROM ACCOUNT WHERE LOWER(USERNAME) = ? AND PASSWORD = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
@@ -81,7 +81,7 @@ namespace PermacallWebApp.Repos
             {
                 {"sessionkey", sessionKey}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = ?", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
@@ -108,7 +108,7 @@ namespace PermacallWebApp.Repos
             {
                 {"id", id.ToString()}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ID = ?", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ID = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
@@ -149,7 +149,7 @@ namespace PermacallWebApp.Repos
 
         public static List<User> GetAllUsers()
         {
-            var result = DB.MainDB.GetMultipleResultsQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT", null);
+            var result = DB.MainDB.GetMultipleResultsQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ENABLED=1", null);
 
             if (result != null)
             {
@@ -184,6 +184,18 @@ namespace PermacallWebApp.Repos
                 {"operatorCount", toEdit.OperatorCount.ToString()},
                 {"strikes", toEdit.Strikes.ToString()},
                 {"id", toEdit.ID.ToString()}
+            };
+            var result = DB.MainDB.InsertQuery(sql, parameters);
+
+            return result;
+        }
+        public static bool SetAccountOperatorCount(int UserID, int operatorCount)
+        {
+            string sql = "UPDATE ACCOUNT SET OPERATORCOUNT=? WHERE ID=?";
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"operatorCount", operatorCount},
+                {"id", UserID}
             };
             var result = DB.MainDB.InsertQuery(sql, parameters);
 
@@ -252,18 +264,18 @@ namespace PermacallWebApp.Repos
                             new ClientModification() { Description = "Strikes : " + toStrikeUser.Strikes });
                         if (banMinutes > 0 && foundClient != null)
                         {
-                            queryRunner.BanClient(foundClient.ClientId, new TimeSpan(0, 0, banMinutes, 0, 0),
-                                "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
-                                " strikes.");
                             queryRunner.PokeClient(foundClient.ClientId,
                                 "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
                                 " strikes.");
+                            queryRunner.BanClient(foundClient.ClientId, new TimeSpan(0, 0, banMinutes, 0, 0),
+                                "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
+                                " strikes.");
                         }
-                        else
+                        else if (foundClient != null)
                         {
-                            if (foundClient != null)
-                                queryRunner.PokeClient(tsUser.TeamspeakDBID.ToUInt(),
-                                "You have received a strike, you now have " + toStrikeUser.Strikes + " strikes.");
+                            queryRunner.PokeClient(foundClient.ClientId,
+                            "You have received a strike, you now have " + toStrikeUser.Strikes + " strikes.");
+                            queryRunner.MoveClient(foundClient.ClientId, 186);
                         }
                     }
                     if (banMinutes > 0)
@@ -282,27 +294,29 @@ namespace PermacallWebApp.Repos
             List<User> userList = GetAllUsers();
             List<TSUser> tsUserList = TeamspeakUserRepo.GetAllTSUsers();
             List<TSUser> toEditTSUsers = new List<TSUser>();
+            if (tsUserList == null || userList == null) return false;
             string sql = "UPDATE ACCOUNT SET LASTSTRIKE=?, STRIKES=? WHERE ID=?";
-            foreach (User user in userList)
-            {
-                if (user.Strikes > 0 && user.LastStrike <= DateTime.Now.AddDays(-30))
+            if (userList != null)
+                foreach (User user in userList)
                 {
-                    user.Strikes--;
-                    user.TSUsers.AddRange(tsUserList.FindAll(x => x.AccountID == user.ID));
-                    foreach (TSUser tsUser in user.TSUsers)
+                    if (user.Strikes > 0 && user.LastStrike <= DateTime.Now.AddDays(-30))
                     {
-                        tsUser.account = user;
-                        toEditTSUsers.Add(tsUser);
-                    }
-                    Dictionary<string, object> parameters = new Dictionary<string, object>()
+                        user.Strikes--;
+                        user.TSUsers.AddRange(tsUserList.FindAll(x => x.AccountID == user.ID));
+                        foreach (TSUser tsUser in user.TSUsers)
+                        {
+                            tsUser.account = user;
+                            toEditTSUsers.Add(tsUser);
+                        }
+                        Dictionary<string, object> parameters = new Dictionary<string, object>()
                     {
                         {"laststrike", DateTime.Now.AddDays(-23)},
                         {"strikes", user.Strikes},
                         {"id", user.ID}
                     };
-                    DB.MainDB.UpdateQuery(sql, parameters);
+                        DB.MainDB.UpdateQuery(sql, parameters);
+                    }
                 }
-            }
 
             using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
             {
@@ -317,10 +331,16 @@ namespace PermacallWebApp.Repos
                         var foundClient =
                             AllClients.FirstOrDefault(x => x.ClientDatabaseId == tsUser.TeamspeakDBID.ToUInt());
 
-                        var uniqueClient = queryRunner.GetClientNameAndUniqueIdByClientDatabaseId(tsUser.TeamspeakDBID.ToUInt());
-
-                        queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                            new ClientModification() { Description = "Strikes : " + tsUser.account.Strikes });
+                        if (tsUser.account.Strikes > 0)
+                        {
+                            queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
+                                new ClientModification() { Description = "Strikes : " + tsUser.account.Strikes });
+                        }
+                        else
+                        {
+                            queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
+                                new ClientModification() { Description = "" });
+                        }
                         if (foundClient != null)
                         {
                             queryRunner.SendTextMessage(MessageTarget.Client, foundClient.ClientId,
@@ -333,6 +353,64 @@ namespace PermacallWebApp.Repos
 
             lastCheck = DateTime.Now;
             return true;
+        }
+
+        public static bool SetStrikeCount(int UserID, int strikes)
+        {
+            User user = GetUser(UserID);
+            List<TSUser> tsUserList = TeamspeakUserRepo.GetAllTSUsers();
+            if (tsUserList == null || user == null) return false;
+
+            if (user.Strikes != strikes)
+            {
+                user.Strikes = strikes;
+                user.TSUsers.AddRange(tsUserList.FindAll(x => x.AccountID == user.ID));
+                string sql = "UPDATE ACCOUNT SET STRIKES=? WHERE ID=?";
+                Dictionary<string, object> parameters = new Dictionary<string, object>()
+                {
+                    {"strikes", user.Strikes},
+                    {"id", user.ID}
+                };
+                DB.MainDB.UpdateQuery(sql, parameters);
+
+
+                using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+                {
+                    queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
+                    queryRunner.SelectVirtualServerById(1);
+                    queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
+
+                    {
+                        // REAL EXCECUTED CODE
+                        var AllClients = queryRunner.GetClientList();
+                        foreach (TSUser tsUser in user.TSUsers)
+                        {
+                            var foundClient =
+                                AllClients.FirstOrDefault(x => x.ClientDatabaseId == tsUser.TeamspeakDBID.ToUInt());
+
+                            if (user.Strikes > 0)
+                            {
+                                queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
+                                    new ClientModification() {Description = "Strikes : " + user.Strikes});
+                            }
+                            else
+                            {
+                                queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
+                                    new ClientModification() {Description = ""});
+                            }
+
+                            if (foundClient != null)
+                            {
+                                queryRunner.SendTextMessage(MessageTarget.Client, foundClient.ClientId,
+                                    "You had your strikes changed, you now have: " + user.Strikes + " strikes");
+                            }
+                        }
+                    }
+                    queryRunner.Logout();
+                }
+                return true;
+            }
+            return false;
         }
 
 

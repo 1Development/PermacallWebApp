@@ -9,8 +9,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - Permacall</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="~/Scripts/modernizr-2.6.2.js"></script>
 </head>
@@ -22,7 +22,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
-                    
+
                 </button>
                 @Html.ActionLink("Permacall", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
@@ -33,7 +33,7 @@
                         @Html.LiActionLink("Manage Accounts", "Index", "Management")
                         if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
                         {
-                            @Html.LiActionLink("Teamspeak", "ShowTeamspeak","Management")
+                            @Html.LiActionLink("Teamspeak", "ShowTeamspeak", "Management")
                         }
                     }
                     else
@@ -63,21 +63,54 @@
                     {
                         @Html.LiActionLink("Logout", "Logout", "Login")
                     }
+
                 </ul>
+                @if (currentUser.ID > 0)
+                {
+                    <div class="navbar-brand navbar-right" style="font-size: 130%">
+                        @currentUser.Username
+                    </div>
+                }
+                
             </div>
         </div>
     </div>
 
     <div class="container body-content">
         @RenderBody()
-        
+
         <footer>
             <p class="text-right">&copy; @DateTime.Now.Year - Permacall<span style="font-size: 1%"> permasoft ;p</span></p>
-            
+
         </footer>
     </div>
 
     <script src="~/Scripts/jquery-1.10.2.min.js"></script>
     <script src="~/Scripts/bootstrap.min.js"></script>
+    @if (ViewBag.Error != null)
+    {
+        <div id="dialog" class="modal fade">
+            <div class="modal-dialog model-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title">Error</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>@ViewBag.Error</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <script type="text/javascript">
+            $(window).load(function () {
+                $('#dialog').modal('show');
+            });
+        </script>
+    }
 </body>
 </html>

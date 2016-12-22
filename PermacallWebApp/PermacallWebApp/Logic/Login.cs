@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -14,7 +15,15 @@ namespace PermacallWebApp.Logic
 
         public static User GetCurrentUser(HttpContext context)
         {
-            AccountRepo.StrikeReductionCheck();
+            try
+            {
+                AccountRepo.StrikeReductionCheck();
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine(e.StackTrace);
+            }
 
             string sessionKey;
             if (!String.IsNullOrEmpty(context.Request.Cookies["SessionData"]?["SessionKey"]))
