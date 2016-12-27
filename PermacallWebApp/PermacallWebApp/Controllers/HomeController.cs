@@ -22,5 +22,14 @@ namespace PermacallWebApp.Controllers
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
             return View();
         }
+
+        public ActionResult NoSecureConnection()
+        {
+            if (Request.IsLocal)
+            {
+                return View();
+            }
+            return RedirectToAction("Index");
+        }
     }
 }

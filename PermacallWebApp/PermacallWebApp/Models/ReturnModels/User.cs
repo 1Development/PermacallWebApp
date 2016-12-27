@@ -36,6 +36,8 @@ namespace PermacallWebApp.Models.ReturnModels
         public string Username { get; set; }
         [DisplayName("Operator Count")]
         public int OperatorCount { get; set; }
+        [DisplayName("Normal User Count")]
+        public int NormalCount { get; set; }
         [DisplayName("Permission Rank")]
         public PermissionGroup Permission { get; set; }
 

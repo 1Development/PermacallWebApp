@@ -26,7 +26,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult Index(int id = -1, int a = 0)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             ManagementModel viewModel = new ManagementModel();
@@ -57,7 +57,7 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult Index(ManagementModel viewModel, int id = -1)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
@@ -75,7 +75,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult AddUser(int a = 0, int kick = 0)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
@@ -205,7 +205,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult ShowTeamspeak()
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER)
                 return RedirectToAction("Index", "Login");
@@ -281,7 +281,7 @@ namespace PermacallWebApp.Controllers
         [HttpGet]
         public ActionResult ManageUsers(int strike = -1, string disableTSUser = null, int delete = -1)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
@@ -322,8 +322,8 @@ namespace PermacallWebApp.Controllers
 
         [HttpPost]
         public ActionResult ManageUsers(UserManagementModel model= null, int id = -1)
-        { //TODO: FOREACH CHECK IF DIFFERENT STATEMENT
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+        {
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");

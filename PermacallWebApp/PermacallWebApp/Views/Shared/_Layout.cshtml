@@ -9,6 +9,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - Permacall</title>
+    @* ICON LINKS *@
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="theme-color" content="#ffffff">
+
     <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -30,11 +38,11 @@
                 <ul class="nav navbar-nav">
                     @if (currentUser.ID > 0)
                     {
-                        @Html.LiActionLink("Manage Accounts", "Index", "Management")
                         if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
                         {
                             @Html.LiActionLink("Teamspeak", "ShowTeamspeak", "Management")
                         }
+                        @Html.LiActionLink("Manage Accounts", "Index", "Management")
                     }
                     else
                     {
@@ -43,7 +51,6 @@
                     }
                     @Html.LiActionLink("LAN-Party", "Index", "LanParty")
 
-                    @* // TODO : Finish up shared layout file *@
                     @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.OPERATOR)
                     {
                         <li class="dropdown">

@@ -12,7 +12,6 @@ namespace PermacallWebApp.Logic
 {
     public static class Login
     {
-
         public static User GetCurrentUser(HttpContext context)
         {
             try

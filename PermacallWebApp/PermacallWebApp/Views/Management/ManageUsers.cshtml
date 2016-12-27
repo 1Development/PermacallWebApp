@@ -73,14 +73,13 @@
                                         }
                                         else
                                         {
-                                            <button type="button" class="btn btn-danger disabled " onclick="location.href = '\#'">
+                                            <button type="button" class="btn btn-danger disabled ">
                                                 STRIKE
                                             </button>
                                         }
                                         @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
                                         {
-                                            <button type="button" class="btn btn-danger" onclick="
-                                                    location.href='@Url.Action("ManageUsers", "Management", new {Delete = Model.UserList[i].ID})' ">
+                                            <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("ManageUsers", "Management", new {Delete = Model.UserList[i].ID})'">
                                                 DELETE
                                             </button>
                                         }

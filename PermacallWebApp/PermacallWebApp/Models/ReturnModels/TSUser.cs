@@ -7,6 +7,10 @@ namespace PermacallWebApp.Models.ReturnModels
 {
     public class TSUser
     {
+        public enum Rank
+        {
+            NORMAL, OPERATOR
+        }
         public TSUser()
         {
         }
@@ -26,6 +30,7 @@ namespace PermacallWebApp.Models.ReturnModels
         public bool toEdit { get; set; }
         public bool isBot { get; set; }
         public DateTime added { get; set; }
+        public Rank UserRank { get; set; }
 
     }
 }

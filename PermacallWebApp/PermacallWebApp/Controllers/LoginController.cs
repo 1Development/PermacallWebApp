@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using System.Web.Services.Protocols;
 using System.Web.UI.WebControls;
 using PermacallWebApp.Models;
+using PermacallWebApp.Models.ReturnModels;
 using PermacallWebApp.Repos;
 using Login = PermacallWebApp.Logic.Login;
 
@@ -18,13 +19,20 @@ namespace PermacallWebApp.Controllers
         // GET: Login
         public ActionResult Index(string prevPage = null)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
             Account viewModel = new Account();
             if (prevPage != null)
                 viewModel.PreviousPage = prevPage;
 
-            if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID > 0) return RedirectToAction("Index", "Management");
+            User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
+            if (currentUser.ID > 0)
+            {
+                if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
+                    return RedirectToAction("ShowTeamspeak", "Management");
+
+                return RedirectToAction("Index", "Management");
+            }
 
             return View(viewModel);
         }
@@ -33,7 +41,7 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult Index(Account account)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID > 0) return RedirectToAction("Index", "Management");
 
@@ -42,7 +50,14 @@ namespace PermacallWebApp.Controllers
                 var loginRe = Login.AuthorizeUser(System.Web.HttpContext.Current, account.Username, account.Password);
                 if (loginRe.Item1)
                 {
-                    return RedirectToAction("Index", "Management");
+                    User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
+                    if (currentUser.ID > 0)
+                    {
+                        if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
+                            return RedirectToAction("ShowTeamspeak", "Management");
+
+                        return RedirectToAction("Index", "Management");
+                    }
                 }
                 account.ErrorMessage = loginRe.Item2;
             }
@@ -54,7 +69,7 @@ namespace PermacallWebApp.Controllers
         // GET: Login/Register
         public ActionResult Register()
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
             Account viewModel = new Account();
 
@@ -66,7 +81,7 @@ namespace PermacallWebApp.Controllers
         [HttpPost]
         public ActionResult Register(Account account)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID > 0) return RedirectToAction("Index", "Management");
 
@@ -104,13 +119,13 @@ namespace PermacallWebApp.Controllers
 
         public ActionResult RegisterSuccesfull()
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             return View();
         }
 
         public ActionResult Logout()
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
             string[] allCookies = HttpContext.Request.Cookies.AllKeys;
             foreach (string cookie in allCookies)
