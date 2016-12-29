@@ -25,6 +25,8 @@ namespace PermacallWebApp.Logic
                     TeamspeakUserRepo.DisableTSUser(teamspeakDBID);
                     queryRunner.DeleteClientFromServerGroup(9,
                         Convert.ToUInt32(teamspeakDBID));
+                    queryRunner.DeleteClientFromServerGroup(7,
+                        Convert.ToUInt32(teamspeakDBID));
                 }
                 queryRunner.Logout();
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using PermacallWebApp.Models.ReturnModels;
 
 namespace PermacallWebApp.Models.ViewModels
 {
@@ -14,7 +15,10 @@ namespace PermacallWebApp.Models.ViewModels
 	    public bool ChannelEmpty { get; set; }
 	    public bool UserAdded { get; set; }
 	    public bool StartedAdding { get; set; }
+        public bool CanAddNormal { get; set; }
+        public bool CanAddOperator { get; set; }
 
 	    public string ErrorMessage { get; set; }
+        public TSUser.Rank ToAddRank { get; set; }
 	}
 }

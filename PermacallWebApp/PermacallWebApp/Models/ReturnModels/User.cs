@@ -21,11 +21,12 @@ namespace PermacallWebApp.Models.ReturnModels
             TSUsers = new List<TSUser>();
         }
 
-        public User(int id, int operatorCount, string username, int strikes, PermissionGroup permission)
+        public User(int id, int normalCount, int operatorCount, string username, int strikes, PermissionGroup permission)
         {
             ID = id;
             Username = username;
             OperatorCount = operatorCount;
+            NormalCount = normalCount;
             Strikes = strikes;
             this.Permission = permission;
             TSUsers = new List<TSUser>();

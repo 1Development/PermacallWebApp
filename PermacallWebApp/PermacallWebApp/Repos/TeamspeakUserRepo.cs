@@ -16,7 +16,7 @@ namespace PermacallWebApp.Repos
             {
                 {"accountid", accountID.ToString() }
             };
-            var result = DB.MainDB.GetMultipleResultsQuery("SELECT TEAMSPEAKDBID, NICKNAME FROM TEAMSPEAKUSER WHERE ACCOUNTID = @accountid AND ENABLED = 1", parameters);
+            var result = DB.MainDB.GetMultipleResultsQuery("SELECT TEAMSPEAKDBID, NICKNAME, RANK FROM TEAMSPEAKUSER WHERE ACCOUNTID = @accountid AND ENABLED = 1", parameters);
 
             if (result == null)
                 return null;
@@ -25,11 +25,14 @@ namespace PermacallWebApp.Repos
 
             foreach (var row in result)
             {
+                TSUser.Rank r;
+                Enum.TryParse(row.Get("RANK"), out r);
                 returnList.Add(new TSUser()
                 {
                     AccountID = accountID,
                     NickName = row.Get("NICKNAME"),
-                    TeamspeakDBID = row.Get("TEAMSPEAKDBID")
+                    TeamspeakDBID = row.Get("TEAMSPEAKDBID"),
+                    UserRank = r
                 });
             }
 
@@ -57,9 +60,10 @@ namespace PermacallWebApp.Repos
             {
                 {"teamspeakid", toAddUser.TeamspeakDBID},
                 {"accountid", toAddUser.AccountID.ToString()},
-                {"nickname", toAddUser.NickName }
+                {"nickname", toAddUser.NickName },
+                {"rank", toAddUser.UserRank.ToString() }
             };
-            var result = DB.MainDB.InsertQuery("INSERT INTO TEAMSPEAKUSER(TEAMSPEAKDBID, ACCOUNTID, NICKNAME) VALUES(@teamspeakid, @accountid, @nickname)", parameters);
+            var result = DB.MainDB.InsertQuery("INSERT INTO TEAMSPEAKUSER(TEAMSPEAKDBID, ACCOUNTID, NICKNAME, RANK) VALUES(@teamspeakid, @accountid, @nickname, @rank)", parameters);
 
             return result;
         }
@@ -94,18 +98,21 @@ namespace PermacallWebApp.Repos
         {
             var result =
                 DB.MainDB.GetMultipleResultsQuery(
-                    "SELECT teamspeakDBID, AccountID, NickName, Added FROM TEAMSPEAKUSER WHERE ENABLED = 1", null);
+                    "SELECT teamspeakDBID, AccountID, NickName, Added, Rank FROM TEAMSPEAKUSER WHERE ENABLED = 1", null);
             List<TSUser> returnList = new List<TSUser>();
             if (result != null)
             {
                 foreach (DBResult row in result)
                 {
+                    TSUser.Rank r = TSUser.Rank.NORMAL;
+                    Enum.TryParse(row.Get("Rank"), out r);
                     returnList.Add(new TSUser()
                     {
                         NickName = row.Get("NickName"),
                         TeamspeakDBID = row.Get("teamspeakDBID"),
                         added = DateTime.Parse(row.Get("Added")),
-                        AccountID = row.Get("AccountID").ToInt()
+                        AccountID = row.Get("AccountID").ToInt(),
+                        UserRank = r
                     });
                 }
                 return returnList;

@@ -34,7 +34,7 @@ namespace PermacallWebApp.Logic
             if (sessionRe.ID > 0)
             {
                 context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
-                context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddMinutes(30);
+                context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddMinutes(120);
 
                 return sessionRe;
             }
@@ -60,7 +60,7 @@ namespace PermacallWebApp.Logic
             AccountRepo.SetSessionKey(username, sessionKey);
 
             context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
-            context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddMinutes(30);
+            context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddMinutes(120);
 
             return new Tuple<bool, string>(true, "Login Succesfull");
 

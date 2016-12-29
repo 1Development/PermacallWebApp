@@ -81,7 +81,7 @@ namespace PermacallWebApp.Repos
             {
                 {"sessionkey", sessionKey}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
@@ -90,16 +90,17 @@ namespace PermacallWebApp.Repos
                     User.PermissionGroup permissionGroup;
                     Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
                     return new User(result.Get("ID").ToInt(),
+                        result.Get("NORMALCOUNT").ToInt(),
                         result.Get("OPERATORCOUNT").ToInt(),
                         result.Get("USERNAME").ToString(),
                         result.Get("STRIKES").ToInt(),
                         permissionGroup);
                 }
                 else
-                    return new User(0, 0, "NOSESSION", 0, User.PermissionGroup.GUEST);
+                    return new User(0, 0, 0, "NOSESSION", 0, User.PermissionGroup.GUEST);
 
             }
-            return new User(-1, 0, "NOCONNECTION", 0, User.PermissionGroup.GUEST);
+            return new User(-1, 0, 0, "NOCONNECTION", 0, User.PermissionGroup.GUEST);
         }
 
         public static User GetUser(int id)
@@ -108,7 +109,7 @@ namespace PermacallWebApp.Repos
             {
                 {"id", id.ToString()}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ID = ? AND ENABLED=1", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ID = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
@@ -119,6 +120,7 @@ namespace PermacallWebApp.Repos
                     DateTime lastStrike = DateTime.Now;
                     DateTime.TryParse(result.Get("LASTSTRIKE"), out lastStrike);
                     return new User(result.Get("ID").ToInt(),
+                        result.Get("NORMALCOUNT").ToInt(),
                         result.Get("OPERATORCOUNT").ToInt(),
                         result.Get("USERNAME").ToString(),
                         result.Get("STRIKES").ToInt(),
@@ -128,10 +130,10 @@ namespace PermacallWebApp.Repos
                     };
                 }
                 else
-                    return new User(0, 0, "NOSESSION", 0, User.PermissionGroup.GUEST);
+                    return new User(0, 0, 0, "NOSESSION", 0, User.PermissionGroup.GUEST);
 
             }
-            return new User(-1, 0, "NOCONNECTION", 0, User.PermissionGroup.GUEST);
+            return new User(-1, 0, 0, "NOCONNECTION", 0, User.PermissionGroup.GUEST);
         }
 
         public static bool InsertNewAccount(string username, string password, string salt)
@@ -149,7 +151,7 @@ namespace PermacallWebApp.Repos
 
         public static List<User> GetAllUsers()
         {
-            var result = DB.MainDB.GetMultipleResultsQuery("SELECT ID, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ENABLED=1", null);
+            var result = DB.MainDB.GetMultipleResultsQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, LASTSTRIKE, PERMISSION FROM ACCOUNT WHERE ENABLED=1", null);
 
             if (result != null)
             {
@@ -162,6 +164,7 @@ namespace PermacallWebApp.Repos
                     DateTime lastStrike = DateTime.Now;
                     DateTime.TryParse(row.Get("LASTSTRIKE"), out lastStrike);
                     returnList.Add(new User(row.Get("ID").ToInt(),
+                        row.Get("NORMALCOUNT").ToInt(),
                         row.Get("OPERATORCOUNT").ToInt(),
                         row.Get("USERNAME"),
                         row.Get("STRIKES").ToInt(),
@@ -189,12 +192,13 @@ namespace PermacallWebApp.Repos
 
             return result;
         }
-        public static bool SetAccountOperatorCount(int UserID, int operatorCount)
+        public static bool SetAccountOperatorCount(int UserID, int operatorCount = 0, int normalCount = 0)
         {
-            string sql = "UPDATE ACCOUNT SET OPERATORCOUNT=? WHERE ID=?";
+            string sql = "UPDATE ACCOUNT SET OPERATORCOUNT=?, NORMALCOUNT=? WHERE ID=?";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"operatorCount", operatorCount},
+                {"normalCount", normalCount},
                 {"id", UserID}
             };
             var result = DB.MainDB.InsertQuery(sql, parameters);
@@ -378,7 +382,7 @@ namespace PermacallWebApp.Repos
                 {
                     queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                     queryRunner.SelectVirtualServerById(1);
-                    queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
+                    queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
                     {
                         // REAL EXCECUTED CODE
@@ -391,12 +395,12 @@ namespace PermacallWebApp.Repos
                             if (user.Strikes > 0)
                             {
                                 queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                                    new ClientModification() {Description = "Strikes : " + user.Strikes});
+                                    new ClientModification() { Description = "Strikes : " + user.Strikes });
                             }
                             else
                             {
                                 queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                                    new ClientModification() {Description = ""});
+                                    new ClientModification() { Description = "" });
                             }
 
                             if (foundClient != null)

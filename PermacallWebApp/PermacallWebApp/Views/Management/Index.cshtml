@@ -1,4 +1,5 @@
-﻿@model PermacallWebApp.Models.ManagementModel
+﻿@using PermacallWebApp.Models.ReturnModels
+@model PermacallWebApp.Models.ManagementModel
 @{
     ViewBag.Title = "Management";
 }
@@ -9,61 +10,66 @@
         @Html.AntiForgeryToken()
 
         <div class="col-md-4 col-md-offset-4 contentBox" style="margin-top: 30px">
-            @if (Model.CurrentUser.OperatorCount > 0)
+            @if (Model.CurrentUser.OperatorCount > 0 || Model.CurrentUser.NormalCount > 0)
             {
+                    <h3>User Slots:</h3>
+                    <br/>
                 <table class="table table-hover">
-                    @for (int i = 0; i < Model.CurrentUser.OperatorCount; i++)
+                    @for (int i = 0; i < Model.CurrentUser.TSUsers.Count; i++)
                     {
-
-                        if (Model.CurrentUser.TSUsers != null && Model.CurrentUser.TSUsers.Count > i)
+                        if (Model.CurrentUser.TSUsers[i].toEdit)
                         {
-                            if (Model.CurrentUser.TSUsers[i].toEdit)
-                            {
-                                <tr>
-                                    <td>
-                                        <div class="row">
-                                            <div class="col-md-10">
-                                                @Html.EditorFor(modelItem => Model.ToChangeName, new { htmlAttributes = new { @style = "width:100%;" } })
-                                            </div>
-                                            <div class="col-md-2">
-                                                <button type="button" onclick="location.href = '@Url.Action("Index", "Management", new {id = Model.ToChangeID, a = -1})'" style="width: 100%"><i class="fa fa-times" aria-hidden="true"></i></button>
-                                            </div>
+                            <tr>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            @Html.EditorFor(modelItem => Model.ToChangeName, new {htmlAttributes = new {@style = "width:100%;"}})
                                         </div>
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <button type="submit" style="width: 100%">Save</button>
-                                            </div>
+                                        <div class="col-md-2">
+                                            <button type="button" onclick="location.href = '@Url.Action("Index", "Management", new {id = Model.ToChangeID, a = -1})'" style="width: 100%"><i class="fa fa-times" aria-hidden="true"></i></button>
                                         </div>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr style="cursor: pointer;" onclick="location.href = '@Url.Action("Index", "Management", new {id = i})'">
-                                    <td>
-                                        @Html.DisplayFor(modelItem => Model.CurrentUser.TSUsers[i].NickName)
-                                    </td>
-                                </tr>
-
-                            }
-
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button type="submit" style="width: 100%">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         }
                         else
                         {
-                            <tr style="cursor: pointer;" onclick="location.href = '@Url.Action("Index", "Management", new {id = i})'">
-                                <td>--------------------</td>
+                            <tr style="cursor: pointer;" onclick="location.href ='@Url.Action("Index", "Management", new {id = i})'">
+                                <td>
+                                    @Html.DisplayFor(modelItem => Model.CurrentUser.TSUsers[i].NickName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => Model.CurrentUser.TSUsers[i].UserRank)
+                                </td>
                             </tr>
+
                         }
 
                     }
+
+
                 </table>
-            }
-            else
-            {
-                <h2>No Slots!</h2>
-                <p>You dont have any slots assigned to this account yet, ask an administrator for slots.</p>
-  
-            }
+
+                if (Model.CurrentUser.TSUsers.Count < Model.CurrentUser.NormalCount + Model.CurrentUser.OperatorCount)
+                {
+                    <br/>
+                    <a href="@Url.Action("Index", "Management", new {id = Model.CurrentUser.TSUsers.Count})">
+                        + Add new User
+                    </a>
+                }
+                    <br/>
+                }
+                else
+                {
+                    <h2>No Slots!</h2>
+                    <p>You dont have any slots assigned to this account yet, ask an administrator for slots.</p>
+
+                }
         </div>
     }
 

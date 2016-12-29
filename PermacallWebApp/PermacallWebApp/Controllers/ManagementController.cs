@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.Versioning;
+using System.Threading;
 using System.Web;
 using System.Web.Mvc;
 using PCDataDLL;
@@ -73,17 +74,30 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpGet]
-        public ActionResult AddUser(int a = 0, int kick = 0)
+        public ActionResult AddUser(int a = 0, int kick = 0, string user = "")
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             if (Login.GetCurrentUser(System.Web.HttpContext.Current).ID <= 0) return RedirectToAction("Index", "Login");
-
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (currentUser.OperatorCount <= 0) return RedirectToAction("Index", "Management");
+
             currentUser.TSUsers = TeamspeakUserRepo.GetTeamspeakUsers(currentUser.ID);
-            if (currentUser.TSUsers.Count >= currentUser.OperatorCount) return RedirectToAction("Index", "Management");
+            if (currentUser.TSUsers.Count >= currentUser.OperatorCount + currentUser.NormalCount) return RedirectToAction("Index", "Management");
+
 
             AddUserModel viewModel = new AddUserModel();
+            TSUser.Rank r = TSUser.Rank.NORMAL;
+            if (user != "" && !Enum.TryParse(user, out r))
+                RedirectToAction("Index", "Management");
+
+
+            viewModel.CanAddNormal = currentUser.NormalCount >
+                                     currentUser.TSUsers.FindAll(x => x.UserRank == TSUser.Rank.NORMAL).Count;
+            viewModel.CanAddOperator = currentUser.OperatorCount >
+                                       currentUser.TSUsers.FindAll(x => x.UserRank == TSUser.Rank.OPERATOR).Count;
+
+            if (user != "" && (r == TSUser.Rank.NORMAL && !viewModel.CanAddNormal) || (r == TSUser.Rank.OPERATOR && !viewModel.CanAddOperator))
+                return RedirectToAction("Index", "Management");
+
             viewModel.ErrorMessage = "";
             viewModel.ChannelName = currentUser.Username;
             viewModel.Password = Login.GenerateRandomString(currentUser.ID, 6, true, true);
@@ -102,7 +116,7 @@ namespace PermacallWebApp.Controllers
                     {
                         queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                         queryRunner.SelectVirtualServerById(1);
-                        queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
+                        queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
                         var channels = queryRunner.GetChannelList();
 
@@ -152,11 +166,16 @@ namespace PermacallWebApp.Controllers
                                                     targetClient.First().ClientDatabaseId.ToString();
                                                 toAddUser.NickName = targetClient.First().Nickname;
                                                 toAddUser.AccountID = currentUser.ID;
+                                                toAddUser.UserRank = r;
                                                 if (TeamspeakUserRepo.TSUserAvailable(toAddUser.TeamspeakDBID))
                                                 {
                                                     TeamspeakUserRepo.AddTeamspeakUserToAccount(toAddUser);
                                                     viewModel.UserAdded = true;
-                                                    queryRunner.AddClientToServerGroup(9,
+                                                    if (r == TSUser.Rank.OPERATOR)
+                                                        queryRunner.AddClientToServerGroup(9,
+                                                        targetClient.First().ClientDatabaseId);
+                                                    if (r == TSUser.Rank.NORMAL)
+                                                        queryRunner.AddClientToServerGroup(7,
                                                         targetClient.First().ClientDatabaseId);
                                                     queryRunner.DeleteChannel(channelID, true);
                                                 }
@@ -223,7 +242,7 @@ namespace PermacallWebApp.Controllers
                 {
                     queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                     queryRunner.SelectVirtualServerById(1);
-                    queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
+                    queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
                     {
                         // REAL EXCECUTED CODE
@@ -260,7 +279,7 @@ namespace PermacallWebApp.Controllers
                 {
                     foreach (ClientListEntry client in clientsInChannel)
                     {
-                        channel.TSUsers.Add(new TSUser() {NickName = client.Nickname, isBot = (client.ClientType == 1)});
+                        channel.TSUsers.Add(new TSUser() { NickName = client.Nickname, isBot = (client.ClientType == 1) });
                     }
                 }
             }
@@ -294,11 +313,11 @@ namespace PermacallWebApp.Controllers
             }
             if (disableTSUser != null)
             {
-                if(CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
-                Teamspeak.DisableTeamspeakUser(disableTSUser);
+                if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
+                    Teamspeak.DisableTeamspeakUser(disableTSUser);
                 return RedirectToAction("ManageUsers");
             }
-            if (delete >-1)
+            if (delete > -1)
             {
                 if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
                     AccountRepo.DeleteAccount(delete);
@@ -306,12 +325,12 @@ namespace PermacallWebApp.Controllers
             }
 
             UserManagementModel returnModel = new UserManagementModel();
-            
+
             List<User> accounts = AccountRepo.GetAllUsers();
             List<TSUser> tsUsers = TeamspeakUserRepo.GetAllTSUsers();
             foreach (var account in accounts)
             {
-                DateTime strikeTime = DateTime.Now.AddMinutes(-15*Math.Pow(2, account.Strikes - 3.0).ToInt());
+                DateTime strikeTime = DateTime.Now.AddMinutes(-15 * Math.Pow(2, account.Strikes - 3.0).ToInt());
                 account.hasBeenStriked = account.LastStrike > strikeTime;
                 account.TSUsers.AddRange(tsUsers.FindAll(x => x.AccountID == account.ID));
             }
@@ -321,7 +340,7 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpPost]
-        public ActionResult ManageUsers(UserManagementModel model= null, int id = -1)
+        public ActionResult ManageUsers(UserManagementModel model = null, int id = -1)
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
@@ -342,7 +361,7 @@ namespace PermacallWebApp.Controllers
                         }
                         if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.OPERATOR)
                         {
-                            AccountRepo.SetAccountOperatorCount(user.ID, user.OperatorCount);
+                            AccountRepo.SetAccountOperatorCount(user.ID, user.OperatorCount, user.NormalCount);
                         }
                         //foreach (TSUser tsUser in user.TSUsers)
                         //{

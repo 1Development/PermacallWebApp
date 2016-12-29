@@ -1,4 +1,5 @@
-﻿@model PermacallWebApp.Models.ViewModels.AddUserModel
+﻿@using PermacallWebApp.Models.ReturnModels
+@model PermacallWebApp.Models.ViewModels.AddUserModel
 @{
     ViewBag.Title = "Add TS User";
 }
@@ -6,7 +7,7 @@
 <div class="row">
     <div class="col-md-6 col-md-offset-3 contentBox" style="margin-top: 30px">
         <h2>Add new TS User to your account</h2>
-        <br/>
+        <br />
         @if (Model.ChannelEmpty && !Model.StartedAdding && !Model.UserAdded)
         {
             <p>In the next step there will apear a channel in teamspeak below the AFK channel, to assign the Teamspeak user to your account you need to join that channel. The Channelname will be the username of your account, and the password for the channel will be a randomly generated code</p>
@@ -21,33 +22,53 @@
         {
             <p>The channel you need to join is:</p>
             <h3>@Model.ChannelName</h3>
-            <br/>
+            <br />
             <p>And the password for this channel is:</p>
             <h3>@Model.Password</h3>
-            <br/><br/>
+            <br /><br />
 
             <div class="row">
                 <div class="col-md-4 col-md-offset-4">
                     <button type="button" class="btn btn-primary" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new { a = 2 })'">Continue</button>
 
                 </div>
-            </div>        
+            </div>
         }
         @if (!Model.ChannelEmpty && Model.StartedAdding && !Model.UserAdded)
         {
-            <p>Is this you?</p>
+            <p>Assign what server group to?</p>
             <h3>@Model.TSName</h3>
-            <br/>
+            <br />
             <div class="row">
-                <div class="col-md-2 col-md-offset-3">
-                    <button type="button" class="btn btn-success" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new {a = 3})'">Yes</button>
-
-                </div>
-                <div class="col-md-2 col-md-offset-2">
-                    <button type="button" class="btn btn-danger" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new { a = 2, kick = 1 })'">No</button>
-
+                @if (Model.CanAddOperator)
+                {
+                    <div class="col-lg-3 col-md-6">
+                        <button type="button" class="btn btn-success" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new {a = 3, user = TSUser.Rank.OPERATOR})'">Operator</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-lg-3 col-md-6">
+                        <button type="button" class="btn btn-success disabled" style="width: 100%" onclick="location.href = '#'">Operator</button>
+                    </div>
+                }
+                @if (Model.CanAddNormal)
+                {
+                    <div class="col-lg-3 col-md-6">
+                        <button type="button" class="btn btn-success" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new {a = 3, user = TSUser.Rank.NORMAL})'">Normal</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-lg-3 col-md-6">
+                        <button type="button" class="btn btn-success disabled" style="width: 100%" onclick="location.href = '#'">Normal</button>
+                    </div>
+                }
+                <div class="col-lg-4 col-lg-offset-1 col-md-12">
+                    <button type="button" class="btn btn-danger" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new {a = 2, kick = 1})'">This isn't me</button>
                 </div>
             </div>
+
         }
         @if (Model.UserAdded)
         {
@@ -69,4 +90,3 @@
 
     </div>
 </div>
-

@@ -43,6 +43,7 @@
                                 <tr style="background-color: rgba(255, 255, 255, 0.2);">
                                     <th>ID</th>
                                     <th>Username</th>
+                                    <th>Normal User Count</th>
                                     <th>Operator Count</th>
                                     <th>Strikes</th>
                                     <th>Permission</th>
@@ -55,6 +56,7 @@
                                     @Html.HiddenFor(m => m.UserList[i].toEdit, new { id = "Edit" + user.ID })
                                     <th>@Html.ValueFor(Model => Model.UserList[i].ID)</th>
                                     <th>@Html.ValueFor(Model => Model.UserList[i].Username)</th>
+                                    <th>@Html.EditorFor(Model => Model.UserList[i].NormalCount)</th>
                                     <th>@Html.EditorFor(Model => Model.UserList[i].OperatorCount)</th>
                                     @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
                                     {
@@ -99,6 +101,7 @@
                                     <tr style="background-color: rgba(255, 255, 255, 0.2);">
                                         <th>Nickname</th>
                                         <th>Added</th>
+                                        <th>User Rank</th>
                                         @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
                                         {
                                             <th>Actions</th>
@@ -113,6 +116,7 @@
                                         <tr>
                                             <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
                                             <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
+                                            <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].UserRank)</th>
                                             @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
                                             {
                                                 <th>
