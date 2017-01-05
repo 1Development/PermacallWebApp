@@ -151,6 +151,8 @@
     <Content Include="scripts\bootstrap.js" />
     <Content Include="scripts\bootstrap.min.js" />
     <Content Include="manifest.json" />
+    <None Include="Properties\PublishProfiles\Direct FTP %282%29.pubxml" />
+    <None Include="Properties\PublishProfiles\Direct FTP.pubxml" />
     <None Include="Properties\PublishProfiles\FTP.pubxml" />
     <None Include="scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="scripts\jquery-1.10.2.js" />
@@ -185,6 +187,7 @@
     <Compile Include="Models\ViewModels\UserManagementModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repos\AccountRepo.cs" />
+    <Compile Include="Repos\LogRepo.cs" />
     <Compile Include="Repos\TeamspeakUserRepo.cs" />
   </ItemGroup>
   <ItemGroup>

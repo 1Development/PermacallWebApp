@@ -46,7 +46,10 @@
                                     <th>Normal User Count</th>
                                     <th>Operator Count</th>
                                     <th>Strikes</th>
-                                    <th>Permission</th>
+                                    @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                    {
+                                        <th>Permission</th>
+                                    }
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -66,7 +69,6 @@
                                     else
                                     {
                                         <th>@Html.ValueFor(Model => Model.UserList[i].Strikes)</th>
-                                        <th>@Html.ValueFor(Model => Model.UserList[i].Permission)</th>
                                     }
                                     <th>
                                         @if (!Model.UserList[i].hasBeenStriked)

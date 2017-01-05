@@ -26,7 +26,9 @@ namespace PermacallWebApp.Logic
 
             string sessionKey;
             if (!String.IsNullOrEmpty(context.Request.Cookies["SessionData"]?["SessionKey"]))
+            {
                 sessionKey = context.Request.Cookies["SessionData"]["SessionKey"];
+            }
             else sessionKey = "nothing";
 
 
@@ -109,6 +111,7 @@ namespace PermacallWebApp.Logic
                 context.ApplicationInstance.CompleteRequest();
                 return false;
             }
+            LogRepo.Log("[" + context.Request.HttpMethod + "] " + context.Request.RawUrl, LogRepo.LogCategory.Request, context.Request.UserHostAddress);
             return true;
         }
     }
