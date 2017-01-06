@@ -222,14 +222,12 @@ namespace PermacallWebApp.Controllers
         }
 
         [HttpGet]
-        public ActionResult ShowTeamspeak()
+        public ActionResult ShowTeamspeak(string promote = "")
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER)
                 return RedirectToAction("Index", "Login");
-
-
 
             ShowTeamSpeakModel returnModel = new ShowTeamSpeakModel();
 
@@ -272,6 +270,8 @@ namespace PermacallWebApp.Controllers
                 });
             }
 
+            List<TSUser> tsUsers = TeamspeakUserRepo.GetAllTSUsers();
+
             foreach (TSChannel channel in AllChanels)
             {
                 var clientsInChannel = clientList.Values.FindAll(x => x.ChannelId == channel.ChannelID);
@@ -279,7 +279,10 @@ namespace PermacallWebApp.Controllers
                 {
                     foreach (ClientListEntry client in clientsInChannel)
                     {
-                        channel.TSUsers.Add(new TSUser() { NickName = client.Nickname, isBot = (client.ClientType == 1) });
+                        TSUser thisTSUser = tsUsers.Find(x => x.TeamspeakDBID.ToUInt() == client.ClientDatabaseId);
+                        User thisUser = null;
+                        if(thisTSUser != null) thisUser = AccountRepo.GetUser(thisTSUser.AccountID);
+                        channel.TSUsers.Add(new TSUser() { NickName = client.Nickname, isBot = (client.ClientType == 1), TeamspeakDBID = client.ClientDatabaseId.ToString(), account = thisUser});
                     }
                 }
             }

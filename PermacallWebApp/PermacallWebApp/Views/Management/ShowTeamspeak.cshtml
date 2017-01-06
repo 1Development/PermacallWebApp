@@ -14,21 +14,47 @@
         }
         else
         {
-            <p class="Channel noLink"> <br/> </p>
+            <p class="Channel noLink"> <br /> </p>
         }
         <div id="@toShowChannel.ChannelID" class="collapse in">
             @if (toShowChannel.TSUsers.Count > 0)
             {
                 foreach (TSUser channelUser in toShowChannel.TSUsers.FindAll(x => !x.isBot))
                 {
-                    <p class="NickName">
-                        <span class="fa-stack" style="font-size: 50%" aria-hidden="true">
-                            <i class="fa fa-circle fa-stack-2x" style="color: #1e90ff" aria-hidden="true"></i>
-                            <i class="fa fa-circle-o fa-stack-2x" style="color: #00008b" aria-hidden="true"></i>
-                        </span>
-                        @channelUser.NickName
-                    </p>
+                    if (channelUser.account == null)
+                    {
+                        <p class="NickName">
+                            <span class="fa-stack" style="font-size: 50%" aria-hidden="true">
+                                <i class="fa fa-circle fa-stack-2x" style="color: #1e90ff" aria-hidden="true"></i>
+                                <i class="fa fa-circle-o fa-stack-2x" style="color: #00008b" aria-hidden="true"></i>
+                            </span>
+                            @channelUser.NickName
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="NickName">
+                            <span class="fa-stack" style="font-size: 50%" aria-hidden="true">
+                                <i class="fa fa-circle fa-stack-2x" style="color: #1e90ff" aria-hidden="true"></i>
+                                <i class="fa fa-circle-o fa-stack-2x" style="color: #00008b" aria-hidden="true"></i>
+                            </span>
+                            <a href="#TS_@channelUser.TeamspeakDBID" data-toggle="collapse" class="noLink">
+                                @channelUser.NickName
+                            </a>
+                        </p>
+                        <div id="TS_@channelUser.TeamspeakDBID" class="collapse col-md-offset-1">
+                            <p>
+                                Account Username: @channelUser.account.Username <br />
+                                Strikes: @channelUser.account.Strikes
+                                @if (channelUser.account.Strikes > 0)
+                                {
+                                    <br />
+                                    <span>Last Strike: @channelUser.account.LastStrike</span>
+                                }
+                            </p>
+                        </div>
 
+                    }
                 }
             }
 

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using Microsoft.Win32;
 using PermacallWebApp.Models.ReturnModels;
 using PermacallWebApp.Repos;
 
@@ -12,6 +13,7 @@ namespace PermacallWebApp.Logic
 {
     public static class Login
     {
+        private static Dictionary<string, string> UserCache;
         public static User GetCurrentUser(HttpContext context)
         {
             try
@@ -35,6 +37,8 @@ namespace PermacallWebApp.Logic
             var sessionRe = AccountRepo.GetUser(sessionKey);
             if (sessionRe.ID > 0)
             {
+                CacheUserName(context.Request.UserHostAddress, sessionRe.Username);
+
                 context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
                 context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddMinutes(120);
 
@@ -43,18 +47,53 @@ namespace PermacallWebApp.Logic
             return sessionRe;
         }
 
+        private static void CacheUserName(string ip, string username)
+        {
+            if (UserCache == null)
+                UserCache = new Dictionary<string, string>();
+            if (UserCache.ContainsKey(ip))
+            {
+                if (UserCache[ip] != username) UserCache[ip] = username;
+            }
+            else if (UserCache.ContainsValue(username))
+            {
+                foreach (var item in UserCache.Where(kvp => kvp.Value == username).ToList())
+                {
+                    if(item.Key != ip) UserCache.Remove(item.Key);
+                }
+                UserCache.Add(ip, username);
+            }
+            else
+            {
+                UserCache.Add(ip, username);
+            }
+        }
+
+        private static string GetCachedUsername(string ip)
+        {
+            if (UserCache == null) UserCache = new Dictionary<string, string>();
+            if (UserCache.ContainsKey(ip)) return UserCache[ip];
+            return "NotLoggedIn";
+        }
+        public static void Logout(string ip)
+        {
+            if (UserCache.ContainsKey(ip)) UserCache.Remove(ip);
+        }
+
+
+
         public static Tuple<bool, string> AuthorizeUser(HttpContext context, string username, string password)
         {
             var saltRe = AccountRepo.GetSalt(username);
             if (!saltRe.Item1)
             {
-                if(saltRe.Item2 == "NOCONNECTION") return new Tuple<bool, string>(false, "Connection to the database could not be established");
+                if (saltRe.Item2 == "NOCONNECTION") return new Tuple<bool, string>(false, "Connection to the database could not be established");
                 return new Tuple<bool, string>(false, "Username not found!");
             }
             var authRe = AccountRepo.ValidateCredentials(username, Encrypt(password, saltRe.Item2));
             if (!authRe.Item1)
             {
-                if (saltRe.Item2 == "NOCONNECTION") return new Tuple<bool, string>(false, "Connection to the database could not be established");   
+                if (saltRe.Item2 == "NOCONNECTION") return new Tuple<bool, string>(false, "Connection to the database could not be established");
                 return new Tuple<bool, string>(false, "Username/Password combination incorrect!");
             }
 
@@ -111,7 +150,7 @@ namespace PermacallWebApp.Logic
                 context.ApplicationInstance.CompleteRequest();
                 return false;
             }
-            LogRepo.Log("[" + context.Request.HttpMethod + "] " + context.Request.RawUrl, LogRepo.LogCategory.Request, context.Request.UserHostAddress);
+            LogRepo.Log("[" + context.Request.HttpMethod + "] " + context.Request.RawUrl, LogRepo.LogCategory.Request, context.Request.UserHostAddress, GetCachedUsername(context.Request.UserHostAddress));
             return true;
         }
     }

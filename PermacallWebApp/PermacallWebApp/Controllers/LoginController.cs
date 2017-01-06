@@ -132,6 +132,7 @@ namespace PermacallWebApp.Controllers
             {
                 HttpContext.Response.Cookies[cookie].Expires = DateTime.Now.AddDays(-1);
             }
+            Login.Logout(Request.UserHostAddress);
 
             return RedirectToAction("Index", "Home");
         }
