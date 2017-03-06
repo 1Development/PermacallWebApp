@@ -10,7 +10,7 @@
         <br />
         @if (Model.ChannelEmpty && !Model.StartedAdding && !Model.UserAdded)
         {
-            <p>In the next step there will apear a channel in teamspeak below the AFK channel, to assign the Teamspeak user to your account you need to join that channel. The Channelname will be the username of your account, and the password for the channel will be a randomly generated code</p>
+            <p>In the next step there will appear a channel in teamspeak below the AFK channel, to assign the Teamspeak user to your account you need to join that channel. The Channelname will be the username of your account, and the password for the channel will be a randomly generated code</p>
             <div class="row">
                 <div class="col-md-4 col-md-offset-4">
                     <button type="button" class="btn btn-primary" style="width: 100%" onclick="location.href = '@Url.Action("AddUser", "Management", new { a = 1 })'">Continue</button>
