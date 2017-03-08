@@ -53,7 +53,7 @@ namespace PermacallWebApp.Controllers
                     User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
                     if (currentUser.ID > 0)
                     {
-                        if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
+                        if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.USER)
                             return RedirectToAction("ShowTeamspeak", "Management");
 
                         return RedirectToAction("Index", "Management");
