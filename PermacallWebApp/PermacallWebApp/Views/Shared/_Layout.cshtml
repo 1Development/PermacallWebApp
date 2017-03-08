@@ -38,7 +38,7 @@
                 <ul class="nav navbar-nav">
                     @if (currentUser.ID > 0)
                     {
-                        if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
+                        if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.USER)
                         {
                             @Html.LiActionLink("Teamspeak", "ShowTeamspeak", "Management")
                         }
@@ -51,7 +51,7 @@
                     }
                     @Html.LiActionLink("LAN-Party", "Index", "LanParty")
 
-                    @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.OPERATOR)
+                    @if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.OPERATOR)
                     {
                         <li class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" href="#">

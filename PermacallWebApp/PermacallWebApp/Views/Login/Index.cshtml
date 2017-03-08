@@ -3,13 +3,13 @@
 @model PermacallWebApp.Models.Account
 @{
     ViewBag.Title = "Login";
-    Model.PreviousPage = Model.PreviousPage;
 }
 <div class="row">
     @using (Html.BeginForm("Index", "Login", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
 
+        @Html.HiddenFor(model=> model.RedirectPage);
         <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top:50px;">
             <h2 class="text-center">Login</h2>
             <div class="form-group row">

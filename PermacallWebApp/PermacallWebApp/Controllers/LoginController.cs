@@ -17,18 +17,18 @@ namespace PermacallWebApp.Controllers
     public class LoginController : Controller
     {
         // GET: Login
-        public ActionResult Index(string prevPage = null)
+        public ActionResult Index(string redirectURL = null)
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
             Account viewModel = new Account();
-            if (prevPage != null)
-                viewModel.PreviousPage = prevPage;
+            if (redirectURL != null)
+                viewModel.RedirectPage = redirectURL;
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (currentUser.ID > 0)
             {
-                if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.USER)
+                if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.USER)
                     return RedirectToAction("ShowTeamspeak", "Management");
 
                 return RedirectToAction("Index", "Management");
@@ -126,13 +126,8 @@ namespace PermacallWebApp.Controllers
         public ActionResult Logout()
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
-
-            string[] allCookies = HttpContext.Request.Cookies.AllKeys;
-            foreach (string cookie in allCookies)
-            {
-                HttpContext.Response.Cookies[cookie].Expires = DateTime.Now.AddDays(-1);
-            }
-            Login.Logout(Request.UserHostAddress);
+            
+            Login.Logout(System.Web.HttpContext.Current, Request.UserHostAddress);
 
             return RedirectToAction("Index", "Home");
         }

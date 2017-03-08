@@ -1,5 +1,5 @@
-﻿@using PermacallWebApp.Logic
-@using PermacallWebApp.Models.ReturnModels
+﻿@using PermacallWebApp.Models.ReturnModels
+@using Login = PermacallWebApp.Logic.Login
 @model PermacallWebApp.Models.ViewModels.UserManagementModel
 @{
     ViewBag.Title = "ManageUsers";
@@ -18,7 +18,7 @@
         <br />
         @using (@Html.BeginForm("ManageUsers", "Management", FormMethod.Post))
         {
-            if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.OPERATOR)
             {
                 <div class="row">
                     <div class="col-md-6 col-md-offset-6 text-right">
@@ -46,7 +46,7 @@
                                     <th>Normal User Count</th>
                                     <th>Operator Count</th>
                                     <th>Strikes</th>
-                                    @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                    @if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                                     {
                                         <th>Permission</th>
                                     }
@@ -61,7 +61,7 @@
                                     <th>@Html.ValueFor(Model => Model.UserList[i].Username)</th>
                                     <th>@Html.EditorFor(Model => Model.UserList[i].NormalCount)</th>
                                     <th>@Html.EditorFor(Model => Model.UserList[i].OperatorCount)</th>
-                                    @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                    @if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                                     {
                                         <th>@Html.EditorFor(Model => Model.UserList[i].Strikes)</th>
                                         <th>@Html.EnumDropDownListFor(Model => Model.UserList[i].Permission)</th>
@@ -81,7 +81,7 @@
                                                 STRIKE
                                             </button>
                                         }
-                                        @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                        @if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                                         {
                                             <button type="button" class="btn btn-danger" onclick="location.href='@Url.Action("ManageUsers", "Management", new {Delete = Model.UserList[i].ID})'">
                                                 DELETE
@@ -104,7 +104,7 @@
                                         <th>Nickname</th>
                                         <th>Added</th>
                                         <th>User Rank</th>
-                                        @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                        @if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                                         {
                                             <th>Actions</th>
                                         }
@@ -119,7 +119,7 @@
                                             <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].NickName)</th>
                                             <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].added)</th>
                                             <th>@Html.ValueFor(Model => Model.UserList[i].TSUsers[j].UserRank)</th>
-                                            @if (currentUser.Permission >= PermacallWebApp.Models.ReturnModels.User.PermissionGroup.ADMIN)
+                                            @if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                                             {
                                                 <th>
                                                     <button type="button" class="btn btn-danger" onclick="location.href = '@Url.Action("ManageUsers", "Management", new {disableTSUser = Model.UserList[i].TSUsers[j].TeamspeakDBID})'">

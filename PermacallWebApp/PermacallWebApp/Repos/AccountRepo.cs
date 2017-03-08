@@ -18,7 +18,6 @@ namespace PermacallWebApp.Repos
         private static DateTime lastCheck;
         public static Tuple<bool, string> GetSalt(string username)
         {
-            GetAllUsers(); //TODO : REMOVE THIS
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"username", username.ToLower()}
@@ -87,7 +86,7 @@ namespace PermacallWebApp.Repos
             {
                 if (result.Get("ID") != null)
                 {
-                    User.PermissionGroup permissionGroup;
+                    PCAuthLib.User.PermissionGroup permissionGroup;
                     Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
                     return new User(result.Get("ID").ToInt(),
                         result.Get("NORMALCOUNT").ToInt(),
@@ -97,10 +96,10 @@ namespace PermacallWebApp.Repos
                         permissionGroup);
                 }
                 else
-                    return new User(0, 0, 0, "NOSESSION", 0, User.PermissionGroup.GUEST);
+                    return new User(0, 0, 0, "NOSESSION", 0, PCAuthLib.User.PermissionGroup.GUEST);
 
             }
-            return new User(-1, 0, 0, "NOCONNECTION", 0, User.PermissionGroup.GUEST);
+            return new User(-1, 0, 0, "NOCONNECTION", 0, PCAuthLib.User.PermissionGroup.GUEST);
         }
 
         public static User GetUser(int id)
@@ -115,7 +114,7 @@ namespace PermacallWebApp.Repos
             {
                 if (result.Get("ID") != null)
                 {
-                    User.PermissionGroup permissionGroup;
+                    PCAuthLib.User.PermissionGroup permissionGroup;
                     Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
                     DateTime lastStrike = DateTime.Now;
                     DateTime.TryParse(result.Get("LASTSTRIKE"), out lastStrike);
@@ -130,10 +129,10 @@ namespace PermacallWebApp.Repos
                     };
                 }
                 else
-                    return new User(0, 0, 0, "NOSESSION", 0, User.PermissionGroup.GUEST);
+                    return new User(0, 0, 0, "NOSESSION", 0, PCAuthLib.User.PermissionGroup.GUEST);
 
             }
-            return new User(-1, 0, 0, "NOCONNECTION", 0, User.PermissionGroup.GUEST);
+            return new User(-1, 0, 0, "NOCONNECTION", 0, PCAuthLib.User.PermissionGroup.GUEST);
         }
 
         public static bool InsertNewAccount(string username, string password, string salt)
@@ -159,7 +158,7 @@ namespace PermacallWebApp.Repos
 
                 foreach (var row in result)
                 {
-                    User.PermissionGroup permissionGroup;
+                    PCAuthLib.User.PermissionGroup permissionGroup;
                     Enum.TryParse(row.Get("PERMISSION"), out permissionGroup);
                     DateTime lastStrike = DateTime.Now;
                     DateTime.TryParse(row.Get("LASTSTRIKE"), out lastStrike);

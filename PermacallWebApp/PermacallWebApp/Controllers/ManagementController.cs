@@ -226,7 +226,7 @@ namespace PermacallWebApp.Controllers
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.USER)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < PCAuthLib.User.PermissionGroup.USER)
                 return RedirectToAction("Index", "Login");
 
             ShowTeamSpeakModel returnModel = new ShowTeamSpeakModel();
@@ -305,7 +305,7 @@ namespace PermacallWebApp.Controllers
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < PCAuthLib.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
 
 
@@ -316,13 +316,13 @@ namespace PermacallWebApp.Controllers
             }
             if (disableTSUser != null)
             {
-                if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
+                if (CurrentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                     Teamspeak.DisableTeamspeakUser(disableTSUser);
                 return RedirectToAction("ManageUsers");
             }
             if (delete > -1)
             {
-                if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
+                if (CurrentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                     AccountRepo.DeleteAccount(delete);
                 return RedirectToAction("ManageUsers");
             }
@@ -347,22 +347,22 @@ namespace PermacallWebApp.Controllers
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             var CurrentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
-            if (CurrentUser.ID <= 0 || CurrentUser.Permission < Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (CurrentUser.ID <= 0 || CurrentUser.Permission < PCAuthLib.User.PermissionGroup.OPERATOR)
                 return RedirectToAction("Index", "Login");
 
             if (model == null) return RedirectToAction("ManageUsers");
 
-            if (model.UserList.Count > 0 && CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.OPERATOR)
+            if (model.UserList.Count > 0 && CurrentUser.Permission >= PCAuthLib.User.PermissionGroup.OPERATOR)
             {
                 {
                     foreach (User user in model.UserList.Where(x => x.toEdit))
                     {
-                        if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.ADMIN)
+                        if (CurrentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
                         {
                             AccountRepo.SetStrikeCount(user.ID, user.Strikes);
                             AccountRepo.UpdateAccount(user);
                         }
-                        if (CurrentUser.Permission >= Models.ReturnModels.User.PermissionGroup.OPERATOR)
+                        if (CurrentUser.Permission >= PCAuthLib.User.PermissionGroup.OPERATOR)
                         {
                             AccountRepo.SetAccountOperatorCount(user.ID, user.OperatorCount, user.NormalCount);
                         }
