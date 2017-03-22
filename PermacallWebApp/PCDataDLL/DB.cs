@@ -24,7 +24,7 @@ namespace PCDataDLL
         {
             get
             {
-                if (portFolioDB == null) portFolioDB = new MySQLRepo(SecureData.PCDBString);
+                if (portFolioDB == null) portFolioDB = new MySQLRepo(SecureData.PFDBString);
                 return portFolioDB;
             }
             private set { portFolioDB = value; }
