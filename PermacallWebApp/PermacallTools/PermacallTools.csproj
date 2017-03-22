@@ -135,6 +135,7 @@
     <Content Include="scripts\bootstrap.js" />
     <Content Include="scripts\bootstrap.min.js" />
     <None Include="Properties\PublishProfiles\FTPTools.pubxml" />
+    <None Include="Properties\PublishProfiles\temp.pubxml" />
     <None Include="scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="scripts\jquery-1.10.2.js" />
     <Content Include="scripts\jquery-1.10.2.min.js" />
@@ -143,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\GDBController.cs" />
     <Compile Include="Controllers\WoWGuildController.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Global.asax.cs">
@@ -183,6 +185,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Files\" />
     <Folder Include="Repos\" />
+    <Folder Include="Views\GDB\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
