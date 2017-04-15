@@ -5,12 +5,14 @@
     ViewBag.Title = Model.LanPartyName;
     var currentUser = Login.GetCurrentUser(HttpContext.Current);
 }
+
 <br />
 <div class="row">
     <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
         <div class="col-xs-12 text-center">
             <h1>@Model.LanPartyName</h1>
         </div>
+        @Html.ActionLink("View previous lanparties", "List")
         @if (currentUser.ID == Model.Owner || currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
         {
             <div class="col-xs-12 text-right">
@@ -20,10 +22,10 @@
         }
     </div>
 </div>
-@if (Model.LanPartyInsomnia.Active)
+@if (Model.LanPartyInsomnia.Active || DateTime.Now < Model.LanPartyInsomnia.Start)
 {
     <div class="row">
-        <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
+        <div class="contentBox form-horizontal col-md-8 col-md-offset-2" id="insomniaContainerDiv" style="font-size: 140%; margin-top: 50px;">
             <div class="col-xs-12">
                 
                 @if (DateTime.Now < Model.LanPartyInsomnia.Start)
@@ -35,7 +37,7 @@
                     <h2 class="text-center">Insomnia Timer:</h2>
                 }
                 <div id="InsomniaTableDiv"></div>
-                @if (currentUser.ID == Model.Owner || currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
+                @if ((currentUser.ID == Model.Owner || currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN) && DateTime.Now > Model.LanPartyInsomnia.Start)
                 {
                     <br />
                     using (Html.BeginForm("Index", "LanParty", FormMethod.Post, new { ID = Model.ID }))
@@ -47,16 +49,23 @@
                             <button class="btn btn-danger">DROP!</button>
                         </div>
                     }
+
                 }
+                <div class="col-xxs-12">
+                    <button onclick="ToggleInsomniaHeight(event)" class="btn btn-default text-right hiddenButton">toggle fullscreen</button>
+                </div>
 
             </div>
         </div>
     </div>
 
     <script>
+        var isFullscreen = false;
         function RefreshInsomnia() {
+            var pageUrl = "/LanParty/InsomniaContent/@Model.ID";
+            if (isFullscreen) pageUrl += "?full=1";
             $.ajax({
-                url: "/LanParty/InsomniaContent/@Model.ID",
+                url: pageUrl,
                 success: function(result) {
                     $("#InsomniaTableDiv").html(result);
                 }
@@ -68,15 +77,37 @@
         {
             @:setInterval(RefreshInsomnia, 10000);
         }
+
+
+
+        function ToggleInsomniaHeight(event) {
+            event.preventDefault();
+            if (hasClass(document.getElementById('insomniaContainerDiv'), 'InsomniaMaxHeight')) {
+                $("#insomniaContainerDiv").removeClass('InsomniaMaxHeight');
+                $("#insomniaContainerDiv").addClass('col-md-8');
+                $("#insomniaContainerDiv").addClass('col-md-offset-2');
+                $("#insomniaContainerDiv").removeClass('col-md-12');
+                isFullscreen = false;
+                $(".navbar").show();
+            } else {
+                $("#insomniaContainerDiv").removeClass('col-md-8');
+                $("#insomniaContainerDiv").removeClass('col-md-offset-2');
+                $("#insomniaContainerDiv").addClass('col-md-12');
+                $("#insomniaContainerDiv").addClass('InsomniaMaxHeight');
+                isFullscreen = true;
+                $(".navbar").hide();
+            }
+            RefreshInsomnia();
+        }
     </script>
 }
 <div class="row">
     <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
         <div class="col-xs-12">
-            <br />
             @Html.Raw(Model.LanPartyContent)
             <br />
         </div>
     </div>
 </div>
 
+<link href="~/Content/LanParty.css" rel="stylesheet" type="text/css" />

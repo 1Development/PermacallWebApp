@@ -6,20 +6,12 @@
 <div class="row">
     <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
         <h1>All Lan-Parties</h1>
-        <h2>Click one to view the page of the lan-party</h2>
+        <h3>Click one to view the page of the lan-party</h3>
         <br />
         @foreach (var lanParty in Model)
         {
             @Html.ActionLink(lanParty.LanPartyName, "Index", new { ID = lanParty.ID }) <br/>
         }
-
-        
-
-        <h2>Gegevens Teamviewer</h2>
-        <p><span class="h3">ID:</span> 770 917 500
-        </p>
-        <p><span class="h3">Wachtwoord:</span> 8unk61
-        </p> <br/>
     </div>
 </div>
 

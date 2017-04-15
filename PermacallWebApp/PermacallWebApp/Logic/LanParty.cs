@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using PermacallWebApp.Models.LanParty;
 
 namespace PermacallWebApp.Logic
 {

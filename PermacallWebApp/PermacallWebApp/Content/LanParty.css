@@ -1,0 +1,18 @@
+﻿.InsomniaTimerText {
+    font-size: 700%;
+}
+.LargeInsomniaTimerText {
+    font-size: 1200%;
+}
+.InsomniaMaxHeight {
+    min-height: 95vh;
+    transition: height 1s ease;
+}
+
+.hiddenButton {
+    opacity: 0;
+    transition: opacity 0.5s linear;
+}
+.hiddenButton:hover {
+    opacity: 1;
+}

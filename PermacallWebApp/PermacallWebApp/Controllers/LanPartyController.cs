@@ -60,6 +60,7 @@ namespace PermacallWebApp.Controllers
             InsomniaUser usr = new InsomniaUser();
             usr.Name = viewModel.NewDropOut;
             usr.DropOutTime = Logic.LanParty.GetTimerString(lanParty.LanPartyInsomnia.Start);
+            usr.DropOutUnixTime = (DateTime.Now - lanParty.LanPartyInsomnia.Start).TotalSeconds.ToInt();
 
             lanParty.LanPartyInsomnia.Users.Add(usr);
 
@@ -68,10 +69,9 @@ namespace PermacallWebApp.Controllers
             return RedirectToAction("Index", new { ID = lanParty.ID});
         }
 
-        public ActionResult InsomniaContent(int ID = 0)
+        public ActionResult InsomniaContent(int ID = 0, int full = 0)
         {
             LanParty viewModel = new LanParty();
-
             if (ID == 0)
             {
                 var lanParty = LanPartyRepo.GetMostRecentLanParty();
@@ -90,7 +90,7 @@ namespace PermacallWebApp.Controllers
             }
 
             viewModel.LanPartyContent = BBCode.ParseBBCode(viewModel.LanPartyContent);
-
+            viewModel.FullScreen = full == 1;
             return PartialView(viewModel);
         }
 
@@ -134,6 +134,7 @@ namespace PermacallWebApp.Controllers
             if (currentUser.ID != lanParty.Owner && currentUser.Permission < PCAuthLib.User.PermissionGroup.ADMIN)
                 return RedirectToAction("Index");
 
+
             if (LanPartyRepo.UpdateLanParty(viewModel))
                 return RedirectToAction("Index", new { ID = viewModel.ID });
 
@@ -146,7 +147,14 @@ namespace PermacallWebApp.Controllers
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
 
-            return View();
+            List<LanParty> viewModel = LanPartyRepo.GetPreviousLanParties();
+
+            if(viewModel == null)
+                viewModel = new List<LanParty>();
+
+
+
+            return View(viewModel);
         }
     }
 }

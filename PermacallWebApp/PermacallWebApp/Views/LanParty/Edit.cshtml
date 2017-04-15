@@ -64,7 +64,7 @@
                     @Html.ActionLink("Back to Main", "Index", new { ID = Model.ID }, new { @class = "btn btn-primary" })
                 </div>
                 <br />
-                @Html.EditorFor(model => model.LanPartyContent, new { htmlAttributes = new { @style = "height:300px" } })
+                @Html.TextAreaFor(model => model.LanPartyContent, new { htmlAttributes = new { @style = "height:300px" } })
 
 
                 @Html.HiddenFor(m => m.LanPartyInsomnia.Active, new { id = "insomniaActive" })
@@ -139,6 +139,7 @@
 
 
                 <div class="col-xxs-12 text-right">
+                    @Html.ActionLink("Undo Changes", "Edit", new { ID = Model.ID}, new {@class="btn btn-default"})
                     <button class="btn btn-primary">Save</button>
                 </div>
 
@@ -185,10 +186,6 @@
 
     function checkCollapsed() {
         document.getElementById('insomniaActive').value = !hasClass(document.getElementById('toggleInsomnia'), 'in');
-    }
-
-    function hasClass(element, cls) {
-        return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
     }
 
     function SetNow(event, id) {

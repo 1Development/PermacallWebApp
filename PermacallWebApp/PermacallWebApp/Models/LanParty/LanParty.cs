@@ -24,5 +24,6 @@ namespace PermacallWebApp.Models.LanParty
 
         public int Owner { get; set; }
         public string NewDropOut { get; set; }
+        public bool FullScreen { get; set; }
     }
 }

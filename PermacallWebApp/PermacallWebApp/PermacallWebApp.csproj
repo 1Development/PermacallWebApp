@@ -142,6 +142,7 @@
     <Content Include="Content\bootstrap-datetimepicker.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\LanParty.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\wbbtheme.css" />
     <Content Include="favicon-16x16.png" />
@@ -162,6 +163,7 @@
     <Content Include="fonts\wysibbiconfont-wb.woff" />
     <None Include="Properties\PublishProfiles\Direct FTP %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\Direct FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Properties\PublishProfiles\FTP.pubxml" />
     <None Include="scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="scripts\jquery-1.10.2.js" />
@@ -169,6 +171,7 @@
     <Content Include="scripts\jquery-3.2.1.min.js" />
     <Content Include="scripts\jquery.wysibb.min.js" />
     <Content Include="scripts\modernizr-2.6.2.js" />
+    <Content Include="scripts\main.js" />
     <Content Include="scripts\moment.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>

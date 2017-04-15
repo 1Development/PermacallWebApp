@@ -10,5 +10,6 @@ namespace PermacallWebApp.Models.LanParty
         public string Name { get; set; }
         public string DropOutTime { get; set; }
         public string WakeTime { get; set; }
+        public int DropOutUnixTime { get; set; }
     }
 }

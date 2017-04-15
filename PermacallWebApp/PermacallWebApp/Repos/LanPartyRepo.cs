@@ -70,7 +70,8 @@ namespace PermacallWebApp.Repos
 
         public static bool UpdateLanParty(LanParty lanParty)
         {
-            lanParty.LanPartyInsomnia.Users = lanParty.LanPartyInsomnia.Users.OrderBy(x => x.DropOutTime).ToList();
+
+            lanParty.LanPartyInsomnia.Users = lanParty.LanPartyInsomnia.Users.OrderBy(x => x.DropOutTime.Replace(":", "").ToInt()).ToList();
             string sql = "UPDATE LANPARTY SET LanPartyContent=?, Insomnia=? WHERE ID=?";
             var parameters = new Dictionary<string, Object>()
             {
@@ -79,6 +80,32 @@ namespace PermacallWebApp.Repos
                 {"id", lanParty.ID }
             };
             return DB.MainDB.UpdateQuery(sql, parameters);
+        }
+
+        public static List<LanParty> GetPreviousLanParties()
+        {
+            string sql = "SELECT ID, LanPartyName FROM LANPARTY ORDER BY ID DESC";
+            var result = DB.MainDB.GetMultipleResultsQuery(sql, null);
+
+            List<LanParty> retList = new List<LanParty>();
+
+            if (result != null)
+            {
+                foreach (var row in result)
+                {
+                    if (row.Get("ID") != null)
+                    {
+                        LanParty retLanParty = new LanParty();
+                        retLanParty.ID = row.Get("ID").ToInt();
+                        retLanParty.LanPartyName = row.Get("LanPartyName");
+
+                        retList.Add(retLanParty);
+                    }
+                }
+                
+                return retList;
+            }
+            return null;
         }
     }
 }
