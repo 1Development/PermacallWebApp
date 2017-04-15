@@ -1,0 +1,88 @@
+﻿@model PermacallWebApp.Models.LanParty.LanParty
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+@if (Model.LanPartyInsomnia.Users.Count == 1)
+{
+    <h1 class="text-center" style="color: darkred;font-weight: bold">First dropper!</h1>
+}
+@if (Model.LanPartyInsomnia.Users.Count == Model.LanPartyInsomnia.LanPartyPeopleCount - 2)
+{
+    <h1 class="text-center" style="color:darkred">Final finale!</h1>
+}
+@if (Model.LanPartyInsomnia.Users.Count == Model.LanPartyInsomnia.LanPartyPeopleCount - 1)
+{
+    <h1 class="text-center" style="color:darkred">Last man standing!</h1>
+}
+@if (Model.LanPartyInsomnia.Users.Count == Model.LanPartyInsomnia.LanPartyPeopleCount)
+{
+    <h1 class="text-center" style="color:darkred">Game over!<br />Last awake = @Model.LanPartyInsomnia.Users[Model.LanPartyInsomnia.Users.Count].Name</h1>
+}
+
+@if (DateTime.Now < Model.LanPartyInsomnia.Start)
+{
+    <h1 id="jsTimer" class="text-center" style="font-size: 300%">00:00:00</h1>
+}
+else
+{
+    <h1 id="jsTimer" class="text-center" style="font-size: 700%">00:00:00</h1>
+}
+<br />
+
+@if (Model.LanPartyInsomnia.Users.Count > 0)
+{
+    <h2>Dropped out:</h2>
+
+
+
+    <table style="width:100%">
+        <tr>
+            <th>Name</th>
+            <th>Dropped out</th>
+            <th>Woke up</th>
+        </tr>
+        @foreach (var user in Model.LanPartyInsomnia.Users)
+        {
+            <tr>
+                <td>@user.Name</td>
+                <td>@user.DropOutTime</td>
+                <td>@user.WakeTime</td>
+            </tr>
+        }
+    </table>
+}
+
+<script>
+    var dateTime = Date.now();
+    var timestamp = Math.floor(dateTime / 1000);
+    var offset = @((Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds) - timestamp;
+    var startTime = @((Int32)(Model.LanPartyInsomnia.Start.Subtract(new DateTime(1970, 1, 1))).TotalSeconds);
+
+    function GetTime() {
+        var now = Date.now();
+        var nowStamp = Math.floor(now / 1000);
+
+        var totSeconds = nowStamp - startTime + offset;
+        var hours = Math.floor(totSeconds / 3600);
+        var minutes = Math.floor((totSeconds - hours * 3600) / 60);
+        var seconds = Math.floor(totSeconds - hours * 3600 - minutes * 60);
+
+        var toPrintSec = "";
+        if (seconds <= 9) toPrintSec = "0" + seconds;
+        else toPrintSec = "" + seconds;
+        var toPrintMin = "";
+        if (minutes <= 9) toPrintMin = "0" + minutes;
+        else toPrintMin = "" + minutes;
+
+        return hours + ":" + toPrintMin + ":" + toPrintSec;
+    }
+
+    function updateTime() {
+
+        $("#jsTimer").html(GetTime());
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+
+
+</script>

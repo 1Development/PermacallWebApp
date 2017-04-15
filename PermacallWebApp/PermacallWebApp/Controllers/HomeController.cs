@@ -19,7 +19,7 @@ namespace PermacallWebApp.Controllers
         // GET: Home
         public ActionResult Index()
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return null;
+            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
             return View();
         }
 

@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using Microsoft.Win32;
-using PermacallWebApp.Models.ReturnModels;
+using PermacallWebApp.Models;
 using PermacallWebApp.Repos;
 
 namespace PermacallWebApp.Logic
@@ -14,6 +14,7 @@ namespace PermacallWebApp.Logic
     public static class Login
     {
         private static Dictionary<string, string> UserCache;
+
         public static User GetCurrentUser(HttpContext context)
         {
             try

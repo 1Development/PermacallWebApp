@@ -5,9 +5,7 @@ using System.Web;
 
 namespace PermacallWebApp.Models.ViewModels
 {
-    public class ShowTeamSpeakModel
+    public class LanPartyViewModel
     {
-        public TSChannel TSRootChannel { get; set; }
-
     }
 }

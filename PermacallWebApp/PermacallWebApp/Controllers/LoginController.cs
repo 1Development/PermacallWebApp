@@ -8,7 +8,6 @@ using System.Web.Mvc;
 using System.Web.Services.Protocols;
 using System.Web.UI.WebControls;
 using PermacallWebApp.Models;
-using PermacallWebApp.Models.ReturnModels;
 using PermacallWebApp.Repos;
 using Login = PermacallWebApp.Logic.Login;
 

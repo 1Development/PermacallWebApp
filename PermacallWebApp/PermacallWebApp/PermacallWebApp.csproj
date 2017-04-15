@@ -44,6 +44,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CodeKicker.BBCode">
+      <HintPath>..\..\lib\CodeKicker.BBCode.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=1.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.1.2.1\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
       <Private>True</Private>
@@ -136,9 +139,11 @@
     <Content Include="android-chrome-512x512.png" />
     <Content Include="apple-touch-icon.png" />
     <Content Include="browserconfig.xml" />
+    <Content Include="Content\bootstrap-datetimepicker.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="Content\wbbtheme.css" />
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
@@ -148,16 +153,23 @@
     <Content Include="safari-pinned-tab.svg" />
     <Content Include="scripts\ai.0.22.19-build00125.js" />
     <Content Include="scripts\ai.0.22.19-build00125.min.js" />
+    <Content Include="scripts\bootstrap-datetimepicker.min.js" />
     <Content Include="scripts\bootstrap.js" />
     <Content Include="scripts\bootstrap.min.js" />
     <Content Include="manifest.json" />
+    <Content Include="fonts\wysibbiconfont-wb.eot" />
+    <Content Include="fonts\wysibbiconfont-wb.ttf" />
+    <Content Include="fonts\wysibbiconfont-wb.woff" />
     <None Include="Properties\PublishProfiles\Direct FTP %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\Direct FTP.pubxml" />
     <None Include="Properties\PublishProfiles\FTP.pubxml" />
     <None Include="scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="scripts\jquery-1.10.2.js" />
     <Content Include="scripts\jquery-1.10.2.min.js" />
+    <Content Include="scripts\jquery-3.2.1.min.js" />
+    <Content Include="scripts\jquery.wysibb.min.js" />
     <Content Include="scripts\modernizr-2.6.2.js" />
+    <Content Include="scripts\moment.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -167,6 +179,8 @@
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\LanPartyController.cs" />
+    <Compile Include="Logic\BBCode.cs" />
+    <Compile Include="Logic\LanParty.cs" />
     <Compile Include="Logic\Login.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
@@ -176,10 +190,14 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Logic\Teamspeak.cs" />
-    <Compile Include="Models\ReturnModels\TSChannel.cs" />
-    <Compile Include="Models\ReturnModels\TSUser.cs" />
-    <Compile Include="Models\ReturnModels\User.cs" />
+    <Compile Include="Models\LanParty\Insomnia.cs" />
+    <Compile Include="Models\LanParty\InsomniaUser.cs" />
+    <Compile Include="Models\LanParty\LanParty.cs" />
+    <Compile Include="Models\TSChannel.cs" />
+    <Compile Include="Models\TSUser.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Models\ViewModels\AddUserModel.cs" />
+    <Compile Include="Models\ViewModels\LanPartyViewModel.cs" />
     <Compile Include="Models\ViewModels\ManagementModel.cs" />
     <Compile Include="Models\Account.cs" />
     <Compile Include="Models\ViewModels\Notifications.cs" />
@@ -187,6 +205,7 @@
     <Compile Include="Models\ViewModels\UserManagementModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repos\AccountRepo.cs" />
+    <Compile Include="Repos\LanPartyRepo.cs" />
     <Compile Include="Repos\LogRepo.cs" />
     <Compile Include="Repos\TeamspeakUserRepo.cs" />
   </ItemGroup>
@@ -210,6 +229,10 @@
     <Content Include="Views\LanParty\Index.cshtml" />
     <Content Include="Views\Management\ShowTeamspeak.cshtml" />
     <Content Include="Views\Home\NoSecureConnection.cshtml" />
+    <Content Include="Views\LanParty\List.cshtml" />
+    <Content Include="Views\LanParty\Edit.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Date.cshtml" />
+    <Content Include="Views\LanParty\InsomniaContent.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

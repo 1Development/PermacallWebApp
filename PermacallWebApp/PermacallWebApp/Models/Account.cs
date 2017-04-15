@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Web;
-using PermacallWebApp.Models.ReturnModels;
 
 namespace PermacallWebApp.Models
 {

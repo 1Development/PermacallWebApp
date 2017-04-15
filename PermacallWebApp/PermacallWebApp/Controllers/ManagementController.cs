@@ -9,7 +9,6 @@ using System.Web.Mvc;
 using PCDataDLL;
 using PermacallWebApp.Logic;
 using PermacallWebApp.Models;
-using PermacallWebApp.Models.ReturnModels;
 using PermacallWebApp.Models.ViewModels;
 using PermacallWebApp.Repos;
 using TS3QueryLib.Core;

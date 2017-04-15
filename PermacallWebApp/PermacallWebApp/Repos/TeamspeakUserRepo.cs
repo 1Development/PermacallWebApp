@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using MySql.Data.MySqlClient;
 using PCDataDLL;
-using PermacallWebApp.Models.ReturnModels;
+using PermacallWebApp.Models;
 
 namespace PermacallWebApp.Repos
 {

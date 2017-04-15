@@ -1,14 +1,82 @@
-﻿
+﻿@using System.Runtime.Remoting.Messaging
+@using PermacallWebApp.Logic
+@model PermacallWebApp.Models.LanParty.LanParty
 @{
-    ViewBag.Title = "LanParty OMG!";
+    ViewBag.Title = Model.LanPartyName;
+    var currentUser = Login.GetCurrentUser(HttpContext.Current);
+}
+<br />
+<div class="row">
+    <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
+        <div class="col-xs-12 text-center">
+            <h1>@Model.LanPartyName</h1>
+        </div>
+        @if (currentUser.ID == Model.Owner || currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
+        {
+            <div class="col-xs-12 text-right">
+                @Html.ActionLink("Edit", "Edit", new { ID = Model.ID }, new { @class = "btn btn-primary" })
+            </div>
+            <br/>
+        }
+    </div>
+</div>
+@if (Model.LanPartyInsomnia.Active)
+{
+    <div class="row">
+        <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
+            <div class="col-xs-12">
+                
+                @if (DateTime.Now < Model.LanPartyInsomnia.Start)
+                {
+                    <h2 class="text-center">Lanparty will start in:</h2>
+                }
+                else
+                {
+                    <h2 class="text-center">Insomnia Timer:</h2>
+                }
+                <div id="InsomniaTableDiv"></div>
+                @if (currentUser.ID == Model.Owner || currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN)
+                {
+                    <br />
+                    using (Html.BeginForm("Index", "LanParty", FormMethod.Post, new { ID = Model.ID }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.EditorFor(model => model.NewDropOut)
+
+                        <div class="col-xxs-12 text-right">
+                            <button class="btn btn-danger">DROP!</button>
+                        </div>
+                    }
+                }
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function RefreshInsomnia() {
+            $.ajax({
+                url: "/LanParty/InsomniaContent/@Model.ID",
+                success: function(result) {
+                    $("#InsomniaTableDiv").html(result);
+                }
+            });
+        }
+
+        RefreshInsomnia();
+        @if ((DateTime.Now - Model.LanPartyInsomnia.Start).TotalDays < 5 && DateTime.Now > Model.LanPartyInsomnia.Start)
+        {
+            @:setInterval(RefreshInsomnia, 10000);
+        }
+    </script>
 }
 <div class="row">
     <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
-        <h1>Welkom bij de LAN-Party :D</h1>
-        <br />
-
-        <h2>Gegevens Teamviewer</h2>
-        <p><span class="h3">ID:</span> 770 917 500 </p>
-        <p><span class="h3">Wachtwoord:</span> 8unk61 </p> <br />
+        <div class="col-xs-12">
+            <br />
+            @Html.Raw(Model.LanPartyContent)
+            <br />
+        </div>
     </div>
 </div>
+

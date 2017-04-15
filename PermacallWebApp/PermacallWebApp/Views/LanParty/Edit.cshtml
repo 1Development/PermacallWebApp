@@ -1,0 +1,199 @@
+﻿@model PermacallWebApp.Models.LanParty.LanParty
+@{
+    ViewBag.Title = Model.LanPartyName;
+}
+
+<script src="~/scripts/moment.js"></script>
+<script type="text/javascript" src="~/scripts/bootstrap-datetimepicker.min.js"></script>
+<link rel="stylesheet" href="~/Content/bootstrap-datetimepicker.min.css" />
+<script src="~/scripts/jquery.wysibb.min.js"></script>
+<link rel="stylesheet" href="~/content/wbbtheme.css" type="text/css" />
+
+<script>
+    $(document).ready(function () {
+        var wbbOpt = {
+            buttons: "bold,italic,underline,fontcolor,|,img,link,code,|,h1,h2,h3,h4",
+            allButtons: {
+                h1: {
+                    title: 'Insert h1',
+                    buttonText: 'h1',
+                    hotkey: "ctrl+shift+1", //Add hotkey
+                    transform: {
+                        '<h1>{SELTEXT}</h1>': '[h1]{SELTEXT}[/h1]'
+                    }
+                },
+                h2: {
+                    title: 'Insert h2',
+                    buttonText: 'h2',
+                    hotkey: "ctrl+shift+2", //Add hotkey
+                    transform: {
+                        '<h2>{SELTEXT}</h2>': '[h2]{SELTEXT}[/h2]'
+                    }
+                },
+                h3: {
+                    title: 'Insert h3',
+                    buttonText: 'h3',
+                    hotkey: "ctrl+shift+3", //Add hotkey
+                    transform: {
+                        '<h3>{SELTEXT}</h3>': '[h3]{SELTEXT}[/h3]'
+                    }
+                },
+                h4: {
+                    title: 'Insert h4',
+                    buttonText: 'h4',
+                    hotkey: "ctrl+shift+4", //Add hotkey
+                    transform: {
+                        '<h4>{SELTEXT}</h4>': '[h4]{SELTEXT}[/h4]'
+                    }
+                }
+            }
+        }
+        $("#LanPartyContent").wysibb(wbbOpt);
+    });
+</script>
+
+<div class="row">
+    @using (Html.BeginForm("Edit", "LanParty", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
+            <div class="col-xs-12">
+                <h1>@Model.LanPartyName</h1>
+                <br />
+                <div class="col-xs-12 text-right">
+                    @Html.ActionLink("Back to Main", "Index", new { ID = Model.ID }, new { @class = "btn btn-primary" })
+                </div>
+                <br />
+                @Html.EditorFor(model => model.LanPartyContent, new { htmlAttributes = new { @style = "height:300px" } })
+
+
+                @Html.HiddenFor(m => m.LanPartyInsomnia.Active, new { id = "insomniaActive" })
+
+                <br />
+                <a class="text-center" href="#toggleInsomnia" data-toggle="collapse" onclick="checkCollapsed()">
+                    <h3 class="noLink">Insomnia</h3>
+                </a>
+                <div id="toggleInsomnia" class="collapse @(Model.LanPartyInsomnia.Active ? "in" : "")">
+                    <h2 class="text-center" style="color:darkgreen">Enabled</h2>
+                    
+
+                    <h3 class="text-center" id="jsTimer"></h3>
+
+                    <div class="row" style="padding: 15px">
+
+                        
+                        <div class='col-sm-6'>
+                            <h4>Start Time</h4>
+                            <div class="form-group">
+                                <div class='input-group date' id='datetimepicker1'>
+                                    @Html.TextBoxFor(model => model.LanPartyInsomnia.Start, new {@class = "form-control"})
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <h4>Amount of People</h4>
+                            @Html.EditorFor(model=>model.LanPartyInsomnia.LanPartyPeopleCount)
+                        </div>
+                        <script type="text/javascript">
+                            $(document).ready(function () {
+                                $('#datetimepicker1').datetimepicker({
+                                    format: 'D-M-YYYY HH:mm:00'
+                                });
+                            });
+                        </script>
+                    </div>
+                    
+
+                    <div>
+                        @for (int i = 0; i < Model.LanPartyInsomnia.Users.Count; i++)
+                        {
+                            <div style="border-style:solid; border-radius: 4px; border-width: 1px;margin:10px;padding:10px">
+                                <div class="col-xs-12 row">
+                                    @Html.ActionLink("Remove from dropouts", "Edit", new { ID = Model.ID, delInsom = Model.LanPartyInsomnia.Users[i].Name }, new { @class = "btn btn-danger" })
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        Name:<br />
+                                        @Html.EditorFor(model => model.LanPartyInsomnia.Users[i].Name)
+                                    </div>
+                                    <div class="col-sm-6">
+                                        Drop Out Time:<br />
+                                        @Html.EditorFor(model => model.LanPartyInsomnia.Users[i].DropOutTime, new {htmlAttributes = new { @id = "DropOut-"+i}})
+                                        <button onclick="SetNow(event, 'DropOut-@(i)')" class="btn btn-default text-center">Now</button>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        Wakeup Time:<br />
+                                        @Html.EditorFor(model => model.LanPartyInsomnia.Users[i].WakeTime, new { htmlAttributes = new { @id = "WakeTime-" + i }})
+                                        <button onclick="SetNow(event, 'WakeTime-@(i)')" class="btn btn-default text-center">Now</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <br />
+
+
+                <div class="col-xxs-12 text-right">
+                    <button class="btn btn-primary">Save</button>
+                </div>
+
+            </div>
+
+        </div>
+    }
+</div>
+
+<script>
+    
+    var dateTime = Date.now();
+    var timestamp = Math.floor(dateTime / 1000);
+    var offset = @((Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds) - timestamp;
+    var startTime = @((Int32)(Model.LanPartyInsomnia.Start.Subtract(new DateTime(1970, 1, 1))).TotalSeconds);
+
+    function GetTime() {
+        var now = Date.now();
+        var nowStamp = Math.floor(now / 1000);
+
+        var totSeconds = nowStamp - startTime + offset;
+        var hours = Math.floor(totSeconds / 3600);
+        var minutes = Math.floor((totSeconds - hours * 3600) / 60);
+        var seconds = Math.floor(totSeconds - hours * 3600 - minutes * 60);
+
+        var toPrintSec = "";
+        if (seconds <= 9) toPrintSec = "0" + seconds;
+        else toPrintSec = "" + seconds;
+        var toPrintMin = "";
+        if (minutes <= 9) toPrintMin = "0" + minutes;
+        else toPrintMin = "" + minutes;
+
+        return hours + ":" + toPrintMin + ":" + toPrintSec;
+    }
+
+    function updateTime() {
+
+        $("#jsTimer").html(GetTime());
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+
+
+    function checkCollapsed() {
+        document.getElementById('insomniaActive').value = !hasClass(document.getElementById('toggleInsomnia'), 'in');
+    }
+
+    function hasClass(element, cls) {
+        return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+    }
+
+    function SetNow(event, id) {
+        $("#" + id).val(GetTime());
+        event.preventDefault();
+        return false;
+    }
+</script>
