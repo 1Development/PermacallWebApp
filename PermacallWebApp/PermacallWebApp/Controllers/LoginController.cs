@@ -54,9 +54,8 @@ namespace PermacallWebApp.Controllers
                     {
                         if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.USER)
                             return RedirectToAction("ShowTeamspeak", "Management");
-
-                        return RedirectToAction("Index", "Management");
                     }
+                    return RedirectToAction("Index", "Management");
                 }
                 account.ErrorMessage = loginRe.Item2;
             }

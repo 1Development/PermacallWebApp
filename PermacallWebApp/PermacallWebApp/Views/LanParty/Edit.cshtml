@@ -3,9 +3,8 @@
     ViewBag.Title = Model.LanPartyName;
 }
 
-<script src="~/scripts/moment.js"></script>
-<script type="text/javascript" src="~/scripts/bootstrap-datetimepicker.min.js"></script>
-<link rel="stylesheet" href="~/Content/bootstrap-datetimepicker.min.css" />
+<script type="text/javascript" src="~/scripts/jquery.datetimepicker.full.min.js"></script>
+<link rel="stylesheet" href="~/Content/jquery.datetimepicker.min.css" />
 <script src="~/scripts/jquery.wysibb.min.js"></script>
 <link rel="stylesheet" href="~/content/wbbtheme.css" type="text/css" />
 
@@ -85,7 +84,7 @@
                         <div class='col-sm-6'>
                             <h4>Start Time</h4>
                             <div class="form-group">
-                                <div class='input-group date' id='datetimepicker1'>
+                                <div class='input-group date'>
                                     @Html.TextBoxFor(model => model.LanPartyInsomnia.Start, new {@class = "form-control"})
                                     <span class="input-group-addon">
                                         <span class="glyphicon glyphicon-calendar"></span>
@@ -99,8 +98,8 @@
                         </div>
                         <script type="text/javascript">
                             $(document).ready(function () {
-                                $('#datetimepicker1').datetimepicker({
-                                    format: 'D-M-YYYY HH:mm:00'
+                                $('#LanPartyInsomnia_Start').datetimepicker({
+                                    format: 'd-m-Y H:i:00'
                                 });
                             });
                         </script>
