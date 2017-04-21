@@ -62,7 +62,7 @@ else
         var now = Date.now();
         var nowStamp = Math.floor(now / 1000);
 
-        var totSeconds = nowStamp - startTime + offset;
+        var totSeconds = Math.abs(nowStamp - startTime + offset);
         var hours = Math.floor(totSeconds / 3600);
         var minutes = Math.floor((totSeconds - hours * 3600) / 60);
         var seconds = Math.floor(totSeconds - hours * 3600 - minutes * 60);
