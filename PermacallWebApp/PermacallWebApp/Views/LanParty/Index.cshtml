@@ -6,6 +6,7 @@
     var currentUser = Login.GetCurrentUser(HttpContext.Current);
 }
 
+
 <br />
 <div class="row">
     <div class="contentBox form-horizontal col-md-6 col-md-offset-3" style="font-size: 140%; margin-top: 50px;">
@@ -18,7 +19,7 @@
             <div class="col-xs-12 text-right">
                 @Html.ActionLink("Edit", "Edit", new { ID = Model.ID }, new { @class = "btn btn-primary" })
             </div>
-            <br/>
+            <br />
         }
     </div>
 </div>
@@ -27,7 +28,7 @@
     <div class="row">
         <div class="contentBox form-horizontal col-md-8 col-md-offset-2" id="insomniaContainerDiv" style="font-size: 140%; margin-top: 50px;">
             <div class="col-xs-12">
-                
+
                 @if (DateTime.Now < Model.LanPartyInsomnia.Start)
                 {
                     <h2 class="text-center">Lanparty will start in:</h2>
@@ -39,16 +40,20 @@
                 <div id="InsomniaTableDiv"></div>
                 @if ((currentUser.ID == Model.Owner || currentUser.Permission >= PCAuthLib.User.PermissionGroup.ADMIN) && DateTime.Now > Model.LanPartyInsomnia.Start)
                 {
-                    <br />
-                    using (Html.BeginForm("Index", "LanParty", FormMethod.Post, new { ID = Model.ID }))
-                    {
-                        @Html.AntiForgeryToken()
-                        @Html.EditorFor(model => model.NewDropOut)
+                    <div id="insomniaDropInput">
+                        <br />
+                        @using (Html.BeginForm("Index", "LanParty", FormMethod.Post, new { ID = Model.ID }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.EditorFor(model => model.NewDropOut)
 
-                        <div class="col-xxs-12 text-right">
-                            <button class="btn btn-danger">DROP!</button>
-                        </div>
-                    }
+                            <div class="col-xxs-12 text-right">
+                                <button class="btn btn-danger">DROP!</button>
+                            </div>
+                        }
+
+
+                    </div>
 
                 }
                 <div class="col-xxs-12">
@@ -71,11 +76,14 @@
                 }
             });
         }
+        function RefreshCheck() {
+            if(!document.hidden) RefreshInsomnia();
+        }
 
         RefreshInsomnia();
         @if ((DateTime.Now - Model.LanPartyInsomnia.Start).TotalDays < 5 && DateTime.Now > Model.LanPartyInsomnia.Start)
         {
-            @:setInterval(RefreshInsomnia, 10000);
+            @:setInterval(RefreshCheck, 10000);
         }
 
 
@@ -89,6 +97,7 @@
                 $("#insomniaContainerDiv").removeClass('col-md-12');
                 isFullscreen = false;
                 $(".navbar").show();
+                $("#insomniaDropInput").show();
             } else {
                 $("#insomniaContainerDiv").removeClass('col-md-8');
                 $("#insomniaContainerDiv").removeClass('col-md-offset-2');
@@ -96,6 +105,7 @@
                 $("#insomniaContainerDiv").addClass('InsomniaMaxHeight');
                 isFullscreen = true;
                 $(".navbar").hide();
+                $("#insomniaDropInput").hide();
             }
             RefreshInsomnia();
         }

@@ -16,3 +16,6 @@
 .hiddenButton:hover {
     opacity: 1;
 }
+#blinker {
+    font-size: 300%;
+}

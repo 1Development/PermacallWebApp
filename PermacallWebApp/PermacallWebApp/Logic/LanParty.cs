@@ -24,5 +24,15 @@ namespace PermacallWebApp.Logic
 
             return hours + ":" + toPrintMin + ":" + toPrintSec;
         }
+
+        public static Tuple<int,int,int> GetTimerHHMMSS(DateTime StartTime)
+        {
+            var Seconds_Between_Dates = (DateTime.Now - StartTime).TotalSeconds;
+
+            var hours = Math.Floor(Seconds_Between_Dates / 3600);
+            var minutes = Math.Floor((Seconds_Between_Dates - hours * 3600) / 60);
+            var seconds = Math.Floor(Seconds_Between_Dates - hours * 3600 - minutes * 60);
+            return new Tuple<int, int, int>((int)hours, (int)minutes, (int)seconds);
+        }
     }
 }
