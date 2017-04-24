@@ -99,7 +99,7 @@ namespace PermacallWebApp.Controllers
 
             viewModel.ErrorMessage = "";
             viewModel.ChannelName = currentUser.Username;
-            viewModel.Password = Login.GenerateRandomString(currentUser.ID, 6, true, true);
+            viewModel.Password = Login.GenerateRandomFromHash(currentUser.ID, 6, true, true);
 
             viewModel.TSName = "";
             viewModel.ChannelEmpty = true;

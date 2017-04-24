@@ -19,3 +19,15 @@
 #blinker {
     font-size: 300%;
 }
+
+.NoPad {
+    Padding: 0px !important;
+}
+.NoMar {
+    margin: 0px !important;
+}
+
+#insomniaContainerDiv {
+    margin-top: 50px;
+}
+
