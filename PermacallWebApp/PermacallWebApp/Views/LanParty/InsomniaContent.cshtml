@@ -60,6 +60,7 @@ else
 
     var mainTimerIntervalID = 0;
     var HalfDayInterval = 0;
+    var PlayedSoundRecently = 0;
 
     function Blinker() {
         $('#blinker').fadeOut(900);
@@ -86,13 +87,16 @@ else
         var toPrintMin = "";
         if (minutes <= 9) toPrintMin = "0" + minutes;
         else toPrintMin = "" + minutes;
-        if (hours % 12 === 0 && minutes === 0 && nowStamp - startTime + offset > 0) {
+        if ((hours % 12 === 0 || hours % 10 === 0) && minutes === 0 && nowStamp - startTime + offset > 0) {
 
             if (seconds >= 0 && seconds <= 10) {
                 Blinker();
+                if(seconds === 1) playSoundOnce();
             }
             if (seconds < 20) $('#blinker').html(hours + ' HOURS IN!');
-            if (seconds >= 20) $('#blinker').html('');
+            if (seconds >= 20) {
+                $('#blinker').html('');
+            }
         }
 
 
@@ -102,7 +106,6 @@ else
 
 
     function updateTime() {
-
         $("#jsTimer").html(GetTime());
     }
 
@@ -112,5 +115,27 @@ else
 
     $(".text-fit").fitText(0.5, { minFontSize: '30px', maxFontSize: '200px' });
     $("#blinker").fitText(0.5, { minFontSize: '30px', maxFontSize: '50px' });
+
+
+
+    var AllSounds = [
+        "beep.mp3",
+        "bell.mp3",
+        "ding.mp3",
+        "ff.mp3",
+        "music.mp3",
+        "sf.mp3",
+        "tada.mp3",
+        "trumpet.mp3"
+    ];
+
+    function playSoundOnce() {
+        if (Math.abs(Math.floor(Date.now() / 1000) - PlayedSoundRecently) > 10) {
+            PlayedSoundRecently = Math.floor(Date.now() / 1000);
+            var audio = new Audio('/LanPartyWinSounds/' + AllSounds[Math.floor(Math.random() * AllSounds.length)]);
+            audio.volume = 0.5;
+            audio.play();
+        }
+    }
 
 </script>

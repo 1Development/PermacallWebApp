@@ -42,7 +42,7 @@
                 {
                     <div class="toHide">
                         <br />
-                        @using (Html.BeginForm("Index", "LanParty", FormMethod.Post, new { ID = Model.ID }))
+                        @using (Html.BeginForm("Index", "LanParty", new { ID = Model.ID }, FormMethod.Post))
                         {
                             @Html.AntiForgeryToken()
                             @Html.EditorFor(model => model.NewDropOut)

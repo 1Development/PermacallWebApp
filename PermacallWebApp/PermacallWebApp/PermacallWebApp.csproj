@@ -150,6 +150,14 @@
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <Content Include="LanPartyWinSounds\beep.mp3" />
+    <Content Include="LanPartyWinSounds\bell.mp3" />
+    <Content Include="LanPartyWinSounds\ding.mp3" />
+    <Content Include="LanPartyWinSounds\ff.mp3" />
+    <Content Include="LanPartyWinSounds\music.mp3" />
+    <Content Include="LanPartyWinSounds\sf.mp3" />
+    <Content Include="LanPartyWinSounds\tada.mp3" />
+    <Content Include="LanPartyWinSounds\trumpet.mp3" />
     <Content Include="mstile-150x150.png" />
     <Content Include="safari-pinned-tab.svg" />
     <Content Include="scripts\ai.0.22.19-build00125.js" />
