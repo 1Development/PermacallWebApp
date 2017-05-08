@@ -26,6 +26,12 @@
     <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="~/Scripts/modernizr-2.6.2.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('[data-toggle="popover"]').popover();
+        });
+    </script>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -80,10 +86,22 @@
                 @if (currentUser.ID > 0)
                 {
                     <div class="navbar-brand navbar-right" style="font-size: 130%">
-                        @currentUser.Username
+                        @if (currentUser.Strikes > 0)
+                        {
+
+                            <a href="#" data-html="true" class="noLink" title="Strikes" data-toggle="popover" data-placement="bottom" data-content="You currently have: @currentUser.Strikes strikes<br/>Reduction in: @((currentUser.LastStrike.AddDays(30)-DateTime.Now).Days) Days">
+                                <span style="color: #999"> @currentUser.Username </span>
+                                <i class="fa fa-exclamation-triangle" style="color: #cccc00;" aria-hidden="true"></i>
+                            </a>
+                        }
+                        else
+                        {
+
+                            @currentUser.Username
+                        }
                     </div>
                 }
-                
+
             </div>
         </div>
     </div>
@@ -122,7 +140,6 @@
             });
         </script>
     }
-    
-    
+
 </body>
 </html>

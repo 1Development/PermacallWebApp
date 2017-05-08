@@ -80,7 +80,7 @@ namespace PermacallWebApp.Repos
             {
                 {"sessionkey", sessionKey}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION, LASTSTRIKE FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
@@ -88,12 +88,17 @@ namespace PermacallWebApp.Repos
                 {
                     PCAuthLib.User.PermissionGroup permissionGroup;
                     Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
+                    DateTime lastStrike = DateTime.Now;
+                    DateTime.TryParse(result.Get("LASTSTRIKE"), out lastStrike);
                     return new User(result.Get("ID").ToInt(),
                         result.Get("NORMALCOUNT").ToInt(),
                         result.Get("OPERATORCOUNT").ToInt(),
                         result.Get("USERNAME").ToString(),
                         result.Get("STRIKES").ToInt(),
-                        permissionGroup);
+                        permissionGroup)
+                    {
+                        LastStrike = lastStrike
+                    };
                 }
                 else
                     return new User(0, 0, 0, "NOSESSION", 0, PCAuthLib.User.PermissionGroup.GUEST);
@@ -261,10 +266,6 @@ namespace PermacallWebApp.Repos
                             queryRunner.AddBanRule(null, null, uniqueClient.ClientUniqueId, new TimeSpan(0, 0, banMinutes, 0, 0),
                                 "You have been banned for " + banMinutes + " for having " + toStrikeUser.Strikes +
                                     " strikes.");
-
-
-                        queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                            new ClientModification() { Description = "Strikes : " + toStrikeUser.Strikes });
                         if (banMinutes > 0 && foundClient != null)
                         {
                             queryRunner.PokeClient(foundClient.ClientId,
@@ -278,12 +279,9 @@ namespace PermacallWebApp.Repos
                         {
                             queryRunner.PokeClient(foundClient.ClientId,
                             "You have received a strike, you now have " + toStrikeUser.Strikes + " strikes.");
-                            queryRunner.MoveClient(foundClient.ClientId, 186);
+                            queryRunner.MoveClient(foundClient.ClientId, 7);
                         }
                     }
-                    if (banMinutes > 0)
-                        queryRunner.SendGlobalMessage(toStrikeUser.Username + " has been banned for " + banMinutes +
-                                                             " minutes for having " + toStrikeUser.Strikes + " strikes");
                 }
                 queryRunner.Logout();
             }
@@ -334,16 +332,6 @@ namespace PermacallWebApp.Repos
                         var foundClient =
                             AllClients.FirstOrDefault(x => x.ClientDatabaseId == tsUser.TeamspeakDBID.ToUInt());
 
-                        if (tsUser.account.Strikes > 0)
-                        {
-                            queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                                new ClientModification() { Description = "Strikes : " + tsUser.account.Strikes });
-                        }
-                        else
-                        {
-                            queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                                new ClientModification() { Description = "" });
-                        }
                         if (foundClient != null)
                         {
                             queryRunner.SendTextMessage(MessageTarget.Client, foundClient.ClientId,
@@ -390,17 +378,6 @@ namespace PermacallWebApp.Repos
                         {
                             var foundClient =
                                 AllClients.FirstOrDefault(x => x.ClientDatabaseId == tsUser.TeamspeakDBID.ToUInt());
-
-                            if (user.Strikes > 0)
-                            {
-                                queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                                    new ClientModification() { Description = "Strikes : " + user.Strikes });
-                            }
-                            else
-                            {
-                                queryRunner.EditDatbaseClient(tsUser.TeamspeakDBID.ToInt(),
-                                    new ClientModification() { Description = "" });
-                            }
 
                             if (foundClient != null)
                             {
