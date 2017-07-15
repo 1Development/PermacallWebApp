@@ -23,6 +23,12 @@ namespace PermacallWebApp.Controllers
             Account viewModel = new Account();
             if (redirectURL != null)
                 viewModel.RedirectPage = redirectURL;
+            else if (Request.UrlReferrer != null)
+            {
+                string prevURL = Request.UrlReferrer.AbsoluteUri;
+                if(prevURL.Contains("permacall.nl") || Request.IsLocal)
+                redirectURL = prevURL;
+            }
 
             User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
             if (currentUser.ID > 0)
@@ -32,6 +38,7 @@ namespace PermacallWebApp.Controllers
 
                 return RedirectToAction("Index", "Management");
             }
+            viewModel.RedirectPage = redirectURL;
 
             return View(viewModel);
         }
@@ -50,6 +57,11 @@ namespace PermacallWebApp.Controllers
                 if (loginRe.Item1)
                 {
                     User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
+
+                    if (account.RedirectPage.Length > 0 && !String.IsNullOrEmpty(account.RedirectPage) &&
+                        (account.RedirectPage.Contains("permacall.nl") || Request.IsLocal))
+                        return Redirect(account.RedirectPage);
+
                     if (currentUser.ID > 0)
                     {
                         if (currentUser.Permission >= PCAuthLib.User.PermissionGroup.USER)
@@ -124,7 +136,7 @@ namespace PermacallWebApp.Controllers
         public ActionResult Logout()
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return View("~/Views/Home/NoSecureConnection.cshtml");
-            
+
             Login.Logout(System.Web.HttpContext.Current, Request.UserHostAddress);
 
             return RedirectToAction("Index", "Home");
