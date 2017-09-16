@@ -83,6 +83,9 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PCDataDLL">
+      <HintPath>..\..\..\YSchuurmansPortfolio\YouriPortfolio\lib\PCDataDLL.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -145,13 +148,16 @@
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\GDBController.cs" />
+    <Compile Include="Controllers\MPInc.cs" />
     <Compile Include="Controllers\WoWGuildController.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Logic\Login.cs" />
+    <Compile Include="Logic\StringCipher.cs" />
     <Compile Include="LoginData.cs" />
+    <Compile Include="Models\IncrementalGame\EncryptedData.cs" />
     <Compile Include="Models\WoWGuild\Guild.cs" />
     <Compile Include="Models\WoWGuild\HistoryModel.cs" />
     <Compile Include="Models\WoWGuild\WoWCharacter.cs" />
@@ -186,6 +192,7 @@
     <Folder Include="Files\" />
     <Folder Include="Repos\" />
     <Folder Include="Views\GDB\" />
+    <Folder Include="Views\MultiplayerIncremental\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
