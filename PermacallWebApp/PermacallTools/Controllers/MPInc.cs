@@ -35,20 +35,21 @@ namespace PermacallTools.Controllers
             {
                 case "GetTeamMember":
                     {
-                        string playerID = data["PlayerID"];
-                        string playerGroupCode = data["GroupCode"];
-                        IncrementalPlayer plr = PlayerRepo.GetTeamMember(playerID.ToInt(), playerGroupCode);
-                        string returnData = JsonConvert.SerializeObject(plr);
+                        IncrementalPlayer teamPlr = PlayerRepo.GetTeamMember(sender.ID, sender.GroupCode);
+                        string returnData = JsonConvert.SerializeObject(teamPlr);
                         return JsonConvert.SerializeObject(EncryptData(returnData, sender));
                     }
                 case "SendPlayerData":
-                {
-                    string playerID = data["PlayerID"];
-                    string playerGroupCode = data["GroupCode"];
-                    IncrementalPlayer plr = PlayerRepo.GetTeamMember(playerID.ToInt(), playerGroupCode);
-                    string returnData = JsonConvert.SerializeObject(plr);
-                    return JsonConvert.SerializeObject(EncryptData(returnData, sender));
-                }
+                    {
+                        IncrementalPlayer plr = JsonConvert.DeserializeObject<IncrementalPlayer>(data["Player"]);
+                        var result = PlayerRepo.UpdatePlayer(plr.Buildings, plr.Upgrades, sender.ID);
+                        return result ? "1" : "0";
+                    }
+                case "UpdateGroupCode":
+                    {
+                        var result = PlayerRepo.UpdatePlayerGroupCode(data["NewGroupCode"], sender.ID);
+                        return result ? "1" : "0";
+                    }
             }
 
             return "Invalid Request";

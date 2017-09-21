@@ -26,7 +26,7 @@ namespace PermacallTools.Repos.IncrementalGame
             {
                 {"id", id.ToString()}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID,Name,Identifier FROM Player WHERE ID=?", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID,Name,Identifier,GroupCode FROM Player WHERE ID=?", parameters);
 
             IncrementalPlayer player = null;
             if (result != null)
@@ -34,6 +34,7 @@ namespace PermacallTools.Repos.IncrementalGame
                 player.ID = result.Get("ID").ToInt();
                 player.Identifier = result.Get("Identifier");
                 player.Username = result.Get("Name");
+                player.GroupCode = result.Get("GroupCode");
 
                 DateTime lastUpdateDate = DateTime.Now;
                 DateTime.TryParse(result.Get("LastUpdate"), out lastUpdateDate);
@@ -67,7 +68,7 @@ namespace PermacallTools.Repos.IncrementalGame
             return plr;
         }
 
-        public static void UpdatePlayer(Dictionary<string, int> buildings, Dictionary<string, int> upgrades, int playerID)
+        public static bool UpdatePlayer(Dictionary<string, int> buildings, Dictionary<string, int> upgrades, int playerID)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
@@ -75,16 +76,16 @@ namespace PermacallTools.Repos.IncrementalGame
                 {"upgrades", JsonConvert.SerializeObject(upgrades)},
                 {"id", playerID},
             };
-            var result = DB.MainDB.GetOneResultQuery("UPDATE Player SET Buildings=?, Upgrades=?, LastUpdate=NOW() WHERE ID=?", parameters);
+            return DB.MainDB.UpdateQuery("UPDATE Player SET Buildings=?, Upgrades=?, LastUpdate=NOW() WHERE ID=?", parameters);
         }
-        public static void UpdatePlayerGroupCode(string groupCode, int playerID)
+        public static bool UpdatePlayerGroupCode(string groupCode, int playerID)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"groupcode", groupCode},
                 {"id", playerID},
             };
-            var result = DB.MainDB.GetOneResultQuery("UPDATE Player SET GroupCode=? WHERE ID=?", parameters);
+            return DB.MainDB.UpdateQuery("UPDATE Player SET GroupCode=? WHERE ID=?", parameters);
         }
 
         public static IncrementalPlayer GetPlayerData(int id)
