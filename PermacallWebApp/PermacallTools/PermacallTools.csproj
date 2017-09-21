@@ -157,13 +157,15 @@
     <Compile Include="Logic\Login.cs" />
     <Compile Include="Logic\StringCipher.cs" />
     <Compile Include="LoginData.cs" />
-    <Compile Include="Models\IncrementalGame\EncryptedData.cs" />
+    <Compile Include="Models\IncrementalGame\DataPair.cs" />
+    <Compile Include="Models\IncrementalGame\IncrementalPlayer.cs" />
     <Compile Include="Models\WoWGuild\Guild.cs" />
     <Compile Include="Models\WoWGuild\HistoryModel.cs" />
     <Compile Include="Models\WoWGuild\WoWCharacter.cs" />
     <Compile Include="Models\WoWGuild\WoWGuild.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\ToolsController.cs" />
+    <Compile Include="Repos\IncrementalGame\PlayerRepo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />
@@ -190,7 +192,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Files\" />
-    <Folder Include="Repos\" />
     <Folder Include="Views\GDB\" />
     <Folder Include="Views\MultiplayerIncremental\" />
   </ItemGroup>

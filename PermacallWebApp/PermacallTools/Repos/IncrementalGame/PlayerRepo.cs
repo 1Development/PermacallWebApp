@@ -10,14 +10,14 @@ namespace PermacallTools.Repos.IncrementalGame
 {
     public class PlayerRepo
     {
-        public static void NewPlayer(IncrementalPlayer player)
+        public static bool NewPlayer(string name, string identifier)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"name", player.Username},
-                {"identifier", player.Identifier},
+                {"name", name},
+                {"identifier", identifier},
             };
-            DB.MainDB.GetOneResultQuery("INSERT INTO Player(Name, Identifier) VALUES(Name=?, Identifier=?)", parameters);
+            return DB.MainDB.UpdateQuery("INSERT INTO Player(Name, Identifier) VALUES(Name=?, Identifier=?)", parameters);
         }
 
         public static IncrementalPlayer GetPlayerInfo(int id)
@@ -43,12 +43,12 @@ namespace PermacallTools.Repos.IncrementalGame
             return player;
         }
 
-        public static IncrementalPlayer GetTeamMember(IncrementalPlayer player)
+        public static IncrementalPlayer GetTeamMember(int playerID, string playerGroupCode)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"id", player.ID},
-                {"groupCode", player.GroupCode},
+                {"id", playerID},
+                {"groupCode", playerGroupCode},
             };
             var result = DB.MainDB.GetOneResultQuery("SELECT ID,Name,Identifier FROM Player WHERE ID!=? AND GROUPCODE=?", parameters);
 
@@ -67,23 +67,24 @@ namespace PermacallTools.Repos.IncrementalGame
             return plr;
         }
 
-        public static void UpdatePlayer(IncrementalPlayer player)
+        public static void UpdatePlayer(Dictionary<string, int> buildings, Dictionary<string, int> upgrades, int playerID)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"buildings", JsonConvert.SerializeObject(player.Buildings)},
-                {"upgrades", JsonConvert.SerializeObject(player.Upgrades)},
-                {"id", player.ID},
+                {"buildings", JsonConvert.SerializeObject(buildings)},
+                {"upgrades", JsonConvert.SerializeObject(upgrades)},
+                {"id", playerID},
             };
             var result = DB.MainDB.GetOneResultQuery("UPDATE Player SET Buildings=?, Upgrades=?, LastUpdate=NOW() WHERE ID=?", parameters);
         }
-        public static void UpdatePlayerGroupCode(IncrementalPlayer player)
+        public static void UpdatePlayerGroupCode(string groupCode, int playerID)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"buildings", player.GroupCode},
+                {"groupcode", groupCode},
+                {"id", playerID},
             };
-            var result = DB.MainDB.GetOneResultQuery("UPDATE Player SET GroupCode=?", parameters);
+            var result = DB.MainDB.GetOneResultQuery("UPDATE Player SET GroupCode=? WHERE ID=?", parameters);
         }
 
         public static IncrementalPlayer GetPlayerData(int id)
@@ -100,8 +101,8 @@ namespace PermacallTools.Repos.IncrementalGame
                 player.ID = result.Get("ID").ToInt();
                 player.Identifier = result.Get("Identifier");
                 player.Username = result.Get("Name");
-                player.Buildings = JsonConvert.DeserializeObject<Dictionary<string,int>>(result.Get("Buildings"));
-                player.Upgrades = JsonConvert.DeserializeObject<Dictionary<string,int>>(result.Get("Upgrades"));
+                player.Buildings = JsonConvert.DeserializeObject<Dictionary<string, int>>(result.Get("Buildings"));
+                player.Upgrades = JsonConvert.DeserializeObject<Dictionary<string, int>>(result.Get("Upgrades"));
 
                 DateTime lastUpdateDate = DateTime.Now;
                 DateTime.TryParse(result.Get("LastUpdate"), out lastUpdateDate);
@@ -119,7 +120,7 @@ namespace PermacallTools.Repos.IncrementalGame
             };
             var result = DB.MainDB.GetOneResultQuery("SELECT * FROM Player WHERE ID=?", parameters);
 
-            Dictionary<string,string> player = null;
+            Dictionary<string, string> player = null;
             if (result != null)
             {
                 player["ID"] = result.Get("ID");
