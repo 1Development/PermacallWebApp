@@ -136,7 +136,7 @@ namespace PCDataDLL
                                 Dictionary<string, string> thisRow = new Dictionary<string, string>();
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
-                                    if(!reader.IsDBNull(i))
+                                    if (!reader.IsDBNull(i))
                                         thisRow.Add(reader.GetName(i), reader.GetString(i));
                                 }
                                 returnList.Add(new DBResult(thisRow));
@@ -190,13 +190,75 @@ namespace PCDataDLL
             }
         }
 
+        public bool UpdateMultiQuery(List<string> SQLquerys, List<Dictionary<string, object>> parametersList)
+        {
+            if (parametersList == null)
+                parametersList = new List<Dictionary<string, object>>();
+
+            string sql = "";
+            Dictionary<string, object> parameters;
+            MySqlTransaction transaction = null;
+            
+
+            try
+            {
+                using (var conn = new MySqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+
+                    for (int i = 0; i < SQLquerys.Count; i++)
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand(sql, conn,transaction))
+                        {
+                            sql = SQLquerys[i];
+                            parameters = parametersList[i];
+
+                            foreach (var parameter in parameters)
+                            {
+                                sql = ReplaceFirst(sql, "?", "@" + parameter.Key);
+                            }
+
+                            foreach (var parameter in parameters)
+                            {
+                                cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
+                            }
+
+                            return cmd.ExecuteNonQuery() > 0;
+                        }
+                    }
+
+                    transaction.Commit();
+
+                }
+                return true;
+
+            }
+            catch (MySqlException e)
+            {
+                transaction?.Rollback();
+
+                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
+                return false;
+            }
+        }
+
         public bool DeleteQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             return UpdateQuery(SQLquery, parameters);
         }
+        public bool DeleteMultiQuery(List<string> SQLquerys, List<Dictionary<string, object>> parametersList)
+        {
+            return UpdateMultiQuery(SQLquerys, parametersList);
+        }
         public bool InsertQuery(string SQLquery, Dictionary<string, object> parameters)
         {
             return UpdateQuery(SQLquery, parameters);
+        }
+        public bool InsertMultiQuery(List<string> SQLquerys, List<Dictionary<string, object>> parametersList)
+        {
+            return UpdateMultiQuery(SQLquerys, parametersList);
         }
 
         private string ReplaceFirst(string text, string search, string replace)
