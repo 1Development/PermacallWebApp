@@ -103,7 +103,7 @@ namespace PermacallWebApp.Controllers
                     {
                         if (AccountRepo.CheckAvailable(account.Username))
                         {
-                            string randomstring = Login.GenerateRandomString(0, 128);
+                            string randomstring = Login.GenerateRandomString(32);
                             AccountRepo.InsertNewAccount(account.Username, Login.Encrypt(account.Password, randomstring), randomstring);
                             return RedirectToAction("RegisterSuccesfull", "Login");
                         }

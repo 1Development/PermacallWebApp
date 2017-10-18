@@ -31,6 +31,7 @@ namespace PermacallTools.Controllers
         // POST: MPInc/Main
         public string Main(DataPair encData)
         {
+            return "Main";
             //switch ("1")
             //{
             //    // POST: MPInc/Main Command: GetTeamMember
@@ -56,19 +57,19 @@ namespace PermacallTools.Controllers
             //return "Invalid Request";
         }
 
-        public string GetTeamMember(DataPair data)
-        {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "[E] No Secure Connection";
-            if (!PlayerRepo.CheckPlayerKey(data.playerID, data.playerKey)) return "[E] Invalid Credentials";
+        //public string GetTeamMember(DataPair data)
+        //{
+        //    if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "[E] No Secure Connection";
+        //    if (!PlayerRepo.CheckPlayerKey(data.playerID, data.playerKey)) return "[E] Invalid Credentials";
 
-            IncrementalPlayer sender = PlayerRepo.GetPlayerData(data.playerID);
-            IncrementalPlayer teamPlr = PlayerRepo.GetTeamMember(sender.ID, sender.GroupCode);
+        //    IncrementalPlayer sender = PlayerRepo.GetPlayerData(data.playerID);
+        //    IncrementalPlayer teamPlr = PlayerRepo.GetTeamMember(sender.ID, sender.GroupCode);
 
-            DataPair returnPair = new DataPair(sender.ID, PlayerRepo.IncrementPlayerKey(sender.Key), JsonConvert.SerializeObject(teamPlr)));
+        //    DataPair returnPair = new DataPair(sender.ID, PlayerRepo.IncrementPlayerKey(sender.Key), JsonConvert.SerializeObject(teamPlr)));
 
-            string returnData = ;
-            return returnData;
-        }
+        //    string returnData = ;
+        //    return returnData;
+        //}
 
     }
 }

@@ -66,37 +66,37 @@ namespace PermacallTools.Repos.IncrementalGame
             return result;
         }
 
-        public static User GetUser(string sessionKey)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>()
-            {
-                {"sessionkey", sessionKey}
-            };
-            var result = DB.MPInc.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION, LASTSTRIKE FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
+        //public static User GetUser(string sessionKey)
+        //{
+        //    Dictionary<string, object> parameters = new Dictionary<string, object>()
+        //    {
+        //        {"sessionkey", sessionKey}
+        //    };
+        //    var result = DB.MPInc.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION, LASTSTRIKE FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
 
-            if (result != null)
-            {
-                if (result.Get("ID") != null)
-                {
-                    PCAuthLib.User.PermissionGroup permissionGroup;
-                    Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
-                    DateTime lastStrike = DateTime.Now;
-                    DateTime.TryParse(result.Get("LASTSTRIKE"), out lastStrike);
-                    return new User(result.Get("ID").ToInt(),
-                        result.Get("NORMALCOUNT").ToInt(),
-                        result.Get("OPERATORCOUNT").ToInt(),
-                        result.Get("USERNAME").ToString(),
-                        result.Get("STRIKES").ToInt(),
-                        permissionGroup)
-                    {
-                        LastStrike = lastStrike
-                    };
-                }
-                else
-                    return new User(0, 0, 0, "NOSESSION", 0, PCAuthLib.User.PermissionGroup.GUEST);
+        //    if (result != null)
+        //    {
+        //        if (result.Get("ID") != null)
+        //        {
+        //            PCAuthLib.User.PermissionGroup permissionGroup;
+        //            Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
+        //            DateTime lastStrike = DateTime.Now;
+        //            DateTime.TryParse(result.Get("LASTSTRIKE"), out lastStrike);
+        //            return new User(result.Get("ID").ToInt(),
+        //                result.Get("NORMALCOUNT").ToInt(),
+        //                result.Get("OPERATORCOUNT").ToInt(),
+        //                result.Get("USERNAME").ToString(),
+        //                result.Get("STRIKES").ToInt(),
+        //                permissionGroup)
+        //            {
+        //                LastStrike = lastStrike
+        //            };
+        //        }
+        //        else
+        //            return new User(0, 0, 0, "NOSESSION", 0, PCAuthLib.User.PermissionGroup.GUEST);
 
-            }
-            return new User(-1, 0, 0, "NOCONNECTION", 0, PCAuthLib.User.PermissionGroup.GUEST);
-        }
+        //    }
+        //    return new User(-1, 0, 0, "NOCONNECTION", 0, PCAuthLib.User.PermissionGroup.GUEST);
+        //}
     }
 }

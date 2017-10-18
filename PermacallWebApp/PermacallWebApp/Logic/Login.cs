@@ -103,7 +103,7 @@ namespace PermacallWebApp.Logic
                 return new Tuple<bool, string>(false, "Username/Password combination incorrect!");
             }
 
-            string sessionKey = GenerateRandomString(authRe.Item2.ToInt(), 64);
+            string sessionKey = GenerateRandomString(64);
             AccountRepo.SetSessionKey(username, sessionKey);
 
             context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
