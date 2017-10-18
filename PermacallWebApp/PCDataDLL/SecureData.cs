@@ -56,5 +56,10 @@ namespace PCDataDLL
                 return LoginDataDict()["YouriPortDBString"];
             }
         }
+
+        public static string MPIncString
+        {
+            get { return LoginDataDict()["IncrementalGameDBString"]; }
+        }
     }
 }
