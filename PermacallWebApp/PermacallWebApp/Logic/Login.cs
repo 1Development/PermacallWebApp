@@ -77,6 +77,7 @@ namespace PermacallWebApp.Logic
             if (UserCache.ContainsKey(ip)) return UserCache[ip];
             return "NotLoggedIn";
         }
+
         public static void Logout(HttpContext context, string ip)
         {
             string[] allCookies = context.Request.Cookies.AllKeys;
@@ -86,8 +87,6 @@ namespace PermacallWebApp.Logic
             }
             if (UserCache.ContainsKey(ip)) UserCache.Remove(ip);
         }
-
-
 
         public static Tuple<bool, string> AuthorizeUser(HttpContext context, string username, string password)
         {

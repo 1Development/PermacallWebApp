@@ -1,11 +1,9 @@
 
-#pragma warning
-#pragma error
-
 
 /* wysibb */
 @font-face {
     font-family: 'WysiBBiconFont';
+    /* ReSharper disable once CssNotResolved */
     src: url('../fonts/wysibbiconfont-wb.eot');
 }
 
