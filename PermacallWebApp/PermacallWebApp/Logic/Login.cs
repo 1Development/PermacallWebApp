@@ -113,10 +113,9 @@ namespace PermacallWebApp.Logic
 
         }
 
-        public static string GenerateRandomString(int seed, int length = 16, bool fullCaps = false)
+        public static string GenerateRandomString(int length = 16, bool fullCaps = false)
         {
-            DateTime now = DateTime.Now;
-            Random stringrnd = new Random(seed);
+            Random stringrnd = new Random();
             string alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             if (fullCaps) alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string returnstring = "";

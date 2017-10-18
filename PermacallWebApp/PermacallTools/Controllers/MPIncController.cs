@@ -23,7 +23,7 @@ namespace PermacallTools.Controllers
         {
             if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
             IncrementalPlayer playerData = JsonConvert.DeserializeObject<IncrementalPlayer>(data.data);
-            bool succes = PlayerRepo.NewPlayer(playerData.Username, );
+            bool succes = PlayerRepo.NewPlayer(playerData.Username,"" );
 
             return succes ? "1" : "0";
         }
