@@ -202,6 +202,7 @@ namespace PCDataDLL
 
             try
             {
+                int successes = 0;
                 using (var conn = new MySqlConnection(ConnectionString))
                 {
                     conn.Open();
@@ -209,9 +210,9 @@ namespace PCDataDLL
 
                     for (int i = 0; i < SQLquerys.Count; i++)
                     {
+                        sql = SQLquerys[i];
                         using (MySqlCommand cmd = new MySqlCommand(sql, conn,transaction))
                         {
-                            sql = SQLquerys[i];
                             parameters = parametersList[i];
 
                             foreach (var parameter in parameters)
@@ -224,14 +225,14 @@ namespace PCDataDLL
                                 cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
                             }
 
-                            return cmd.ExecuteNonQuery() > 0;
+                            successes += cmd.ExecuteNonQuery();
                         }
                     }
 
                     transaction.Commit();
 
                 }
-                return true;
+                return successes == SQLquerys.Count;
 
             }
             catch (MySqlException e)
