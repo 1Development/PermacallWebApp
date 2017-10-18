@@ -7,21 +7,18 @@ namespace PermacallTools.Models.IncrementalGame
 {
     public class DataPair
     {
-        public DataPair(string key, string data)
+        public DataPair()
         {
-            this.key = key;
+        }
+
+        public DataPair(string playerId, string playerKey, string data)
+        {
+            this.playerID = playerId;
             this.data = data;
         }
 
-        public DataPair(DataPair data, IncrementalPlayer player)
-        {
-            this.key = data.key;
-            this.data = data.data;
-            Player = player;
-        }
-
-        public string key { get; set; }
+        public string playerID { get; set; }
+        public string playerKey { get; set; }
         public string data { get; set; }
-        public IncrementalPlayer Player { get; set; }
     }
 }

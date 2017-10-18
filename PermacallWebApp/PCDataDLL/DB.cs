@@ -10,6 +10,7 @@ namespace PCDataDLL
     {
         private static MySQLRepo mainDB;
         private static MySQLRepo portFolioDB;
+        private static MySQLRepo mpInc;
         public static MySQLRepo MainDB
         {
             get
@@ -28,6 +29,15 @@ namespace PCDataDLL
                 return portFolioDB;
             }
             private set { portFolioDB = value; }
+        }
+        public static MySQLRepo MPInc
+        {
+            get
+            {
+                if (mpInc == null) mpInc = new MySQLRepo(SecureData.MPIncString);
+                return mpInc;
+            }
+            private set { mpInc = value; }
         }
     }
 }

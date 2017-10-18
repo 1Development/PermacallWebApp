@@ -77,6 +77,7 @@ namespace PermacallWebApp.Logic
             if (UserCache.ContainsKey(ip)) return UserCache[ip];
             return "NotLoggedIn";
         }
+
         public static void Logout(HttpContext context, string ip)
         {
             string[] allCookies = context.Request.Cookies.AllKeys;
@@ -86,8 +87,6 @@ namespace PermacallWebApp.Logic
             }
             if (UserCache.ContainsKey(ip)) UserCache.Remove(ip);
         }
-
-
 
         public static Tuple<bool, string> AuthorizeUser(HttpContext context, string username, string password)
         {
@@ -114,10 +113,9 @@ namespace PermacallWebApp.Logic
 
         }
 
-        public static string GenerateRandomString(int seed, int length = 16, bool fullCaps = false)
+        public static string GenerateRandomString(int length = 16, bool fullCaps = false)
         {
-            DateTime now = DateTime.Now;
-            Random stringrnd = new Random(seed);
+            Random stringrnd = new Random();
             string alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             if (fullCaps) alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string returnstring = "";

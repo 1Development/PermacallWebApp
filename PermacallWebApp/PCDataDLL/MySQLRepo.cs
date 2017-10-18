@@ -11,6 +11,7 @@ namespace PCDataDLL
         public MySQLRepo(string connectionString)
         {
             this.ConnectionString = connectionString;
+            //dit is ExecutionEngineException test;
         }
 
         public bool CheckExist(string SQLquery, Dictionary<string, object> parameters)
