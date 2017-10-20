@@ -58,7 +58,7 @@ namespace PermacallWebApp.Controllers
                 {
                     User currentUser = Login.GetCurrentUser(System.Web.HttpContext.Current);
 
-                    if (account.RedirectPage.Length > 0 && !String.IsNullOrEmpty(account.RedirectPage) &&
+                    if (!String.IsNullOrEmpty(account.RedirectPage) && account.RedirectPage.Length > 0 &&
                         (account.RedirectPage.Contains("permacall.nl") || Request.IsLocal))
                         return Redirect(account.RedirectPage);
 
