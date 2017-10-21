@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using Newtonsoft.Json;
 using PermacallTools.Logic;
+using PermacallTools.Logic.MPInc;
 using PermacallTools.Models.IncrementalGame;
 using PermacallTools.Repos.IncrementalGame;
 
@@ -17,59 +18,148 @@ namespace PermacallTools.Controllers
             return "Succes";
         }
 
-        // POST: MPInc/NewPlayer
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">IncAccount toRegisterAccount</param>
+        /// <returns></returns>
+        [HttpPost]
+        public string Register(DataPair data)
+        {
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "ConnErr";
+            IncAccount playerData = JsonConvert.DeserializeObject<IncAccount>(data.data, new JsonSerializerSettings() { });
+            bool available = MPIncAccountRepo.CheckAvailable(playerData.Username);
+            if (!available) return "0";
+
+            string newSalt = Logic.Login.GenerateRandomString();
+
+
+            if (MPIncAccountRepo.InsertNewAccount(playerData.Username, Logic.Login.Encrypt(playerData.Password, newSalt), newSalt))
+                return "1";
+
+            return "0";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">IncAccount toLoginAccount</param>
+        /// <returns></returns>
+        [HttpPost]
+        public string Login(DataPair data)
+        {
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "ConnErr";
+            IncAccount playerData = JsonConvert.DeserializeObject<IncAccount>(data.data);
+            Tuple<bool, string> result = MPIncAccountRepo.ValidateCredentials(playerData.Username, playerData.Password);
+            if (!result.Item1) return "InvalidLogin";
+
+            string newSessionKey = Logic.Login.GenerateRandomString();
+            return MPIncAccountRepo.SetSessionKey(result.Item2, newSessionKey) ? newSessionKey : "Error";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">IncrementalPlayer toCreatePlayer</param>
+        /// <returns></returns>
         [HttpPost]
         public string NewPlayer(DataPair data)
         {
-            if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
+            IncAccount account = MPIncAccountRepo.GetUser(data.SessionKey);
+            if (account.ID == "0") return "InvalidSession";
+
             IncrementalPlayer playerData = JsonConvert.DeserializeObject<IncrementalPlayer>(data.data);
-            bool succes = PlayerRepo.NewPlayer(playerData.Username,"" );
+            bool succes = PlayerRepo.NewPlayer(playerData.Username, account.ID);
 
             return succes ? "1" : "0";
         }
 
-        // POST: MPInc/Main
-        public string Main(DataPair encData)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">int playerID</param>
+        /// <returns></returns>
+        [HttpPost]
+        public string GetPlayerData(DataPair data)
         {
-            return "Main";
-            //switch ("1")
-            //{
-            //    // POST: MPInc/Main Command: GetTeamMember
-            //    case "GetTeamMember":
-            //        {
-            //            IncrementalPlayer teamPlr = PlayerRepo.GetTeamMember(sender.ID, sender.GroupCode);
-            //            string returnData = JsonConvert.SerializeObject(teamPlr);
-            //            return JsonConvert.SerializeObject(EncryptData(returnData, sender));
-            //        }
-            //    case "SendPlayerData":
-            //        {
-            //            IncrementalPlayer plr = JsonConvert.DeserializeObject<IncrementalPlayer>(data["Player"]);
-            //            var result = PlayerRepo.UpdatePlayer(plr.Buildings, plr.Upgrades, sender.ID);
-            //            return result ? "1" : "0";
-            //        }
-            //    case "UpdateGroupCode":
-            //        {
-            //            var result = PlayerRepo.UpdatePlayerGroupCode(data["NewGroupCode"], sender.ID);
-            //            return result ? "1" : "0";
-            //        }
-            //}
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
+            IncAccount account = MPIncAccountRepo.GetUser(data.SessionKey);
+            if (account.ID == "0") return "InvalidSession";
 
-            //return "Invalid Request";
+            if (!MPIncAccountRepo.CheckPlayerAccount(data.data, account.ID)) return "InvalidData";
+            string returnString = PlayerRepo.GetPlayerDataString(data.data);
+
+            if (String.IsNullOrWhiteSpace(returnString)) return "InvalidData";
+            return returnString;
         }
 
-        //public string GetTeamMember(DataPair data)
-        //{
-        //    if (!Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "[E] No Secure Connection";
-        //    if (!PlayerRepo.CheckPlayerKey(data.playerID, data.playerKey)) return "[E] Invalid Credentials";
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">string groupCode</param>
+        /// <returns></returns>
+        [HttpPost]
+        public string GetTeamMember(DataPair data)
+        {
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
+            IncAccount account = MPIncAccountRepo.GetUser(data.SessionKey);
+            if (account.ID == "0") return "InvalidSession";
 
-        //    IncrementalPlayer sender = PlayerRepo.GetPlayerData(data.playerID);
-        //    IncrementalPlayer teamPlr = PlayerRepo.GetTeamMember(sender.ID, sender.GroupCode);
+            if (!MPIncAccountRepo.CheckPlayerAccount(data.data, account.ID)) return "InvalidData";
 
-        //    DataPair returnPair = new DataPair(sender.ID, PlayerRepo.IncrementPlayerKey(sender.Key), JsonConvert.SerializeObject(teamPlr)));
+            IncrementalPlayer teamPlr = PlayerRepo.GetTeamMember(account.ID, data.data);
+            if (teamPlr == null) return "Error";
 
-        //    string returnData = ;
-        //    return returnData;
-        //}
+            string returnString = PlayerRepo.GetPlayerDataString(teamPlr.ID);
+
+
+            if (String.IsNullOrWhiteSpace(returnString)) return "InvalidData";
+            return returnString;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">Dictionary [playerID, newGroupCode]</param>
+        /// <returns></returns>
+        [HttpPost]
+        public string SetGroupCode(DataPair data)
+        {
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
+            IncAccount account = MPIncAccountRepo.GetUser(data.SessionKey);
+            if (account.ID == "0") return "InvalidSession";
+
+            Dictionary<string, string> requestData = JsonConvert.DeserializeObject<Dictionary<string, string>>(data.data);
+
+            if (!MPIncAccountRepo.CheckPlayerAccount(requestData["playerID"], account.ID)) return "InvalidData";
+
+            if (PlayerRepo.isGroupCodeDuplicate(requestData["newGroupCode"])) return "GroupCodeDuplicate";
+
+            return PlayerRepo.UpdatePlayerGroupCode(requestData["newGroupCode"], requestData["playerID"]) ? "1" : "Error";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data">IncrementalPlayer playerToUpdate</param>
+        /// <returns></returns>
+        [HttpPost]
+        public string UpdatePlayer(DataPair data)
+        {
+            if (!Logic.Login.ForceHTTPSConnection(System.Web.HttpContext.Current, true)) return "0";
+            IncAccount account = MPIncAccountRepo.GetUser(data.SessionKey);
+            if (account.ID == "0") return "InvalidSession";
+
+            IncrementalPlayer player = JsonConvert.DeserializeObject<IncrementalPlayer>(data.data);
+
+            if (!MPIncAccountRepo.CheckPlayerAccount(player.ID, account.ID)) return "InvalidData";
+
+            return PlayerRepo.UpdatePlayer(player) ? "1" : "0";
+        }
+
+
+
 
     }
 }

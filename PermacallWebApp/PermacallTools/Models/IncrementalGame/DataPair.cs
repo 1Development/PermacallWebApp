@@ -11,14 +11,13 @@ namespace PermacallTools.Models.IncrementalGame
         {
         }
 
-        public DataPair(string playerId, string playerKey, string data)
+        public DataPair(string sessionKey, string data)
         {
-            this.playerID = playerId;
+            this.SessionKey = sessionKey;
             this.data = data;
         }
 
-        public string playerID { get; set; }
-        public string playerKey { get; set; }
+        public string SessionKey { get; set; }
         public string data { get; set; }
     }
 }

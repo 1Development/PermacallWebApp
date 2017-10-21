@@ -18,14 +18,14 @@ namespace PermacallTools.Repos.IncrementalGame
         /// <param name="name"></param>
         /// <param name="identifier"></param>
         /// <returns></returns>
-        public static bool NewPlayer(string name, string identifier)
+        public static bool NewPlayer(string name, string accountID)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"name", name},
-                {"identifier", identifier},
+                {"accountID", accountID},
             };
-            return DB.MainDB.UpdateQuery("INSERT INTO Player(Name, Identifier) VALUES(Name=?, Identifier=?)", parameters);
+            return DB.MainDB.UpdateQuery("INSERT INTO Player(Name, AccountID) VALUES(Name=?, Accountid=?)", parameters);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace PermacallTools.Repos.IncrementalGame
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static IncrementalPlayer GetPlayerInfo(int id)
+        public static IncrementalPlayer GetPlayerInfo(string id)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
@@ -63,20 +63,19 @@ namespace PermacallTools.Repos.IncrementalGame
         /// <param name="playerID"></param>
         /// <param name="playerGroupCode"></param>
         /// <returns></returns>
-        public static IncrementalPlayer GetTeamMember(int playerID, string playerGroupCode)
+        public static IncrementalPlayer GetTeamMember(string accountID, string playerGroupCode)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"id", playerID},
+                {"accountID", accountID},
                 {"groupCode", playerGroupCode},
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID,Name,Key FROM Player WHERE ID!=? AND GROUPCODE=?", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID,Name FROM Player WHERE AccountID!=? AND GROUPCODE=?", parameters);
 
             IncrementalPlayer plr = new IncrementalPlayer();
             if (result != null)
             {
                 plr.ID = result.Get("ID");
-                plr.Key = result.Get("Key");
                 plr.Username = result.Get("Name");
 
                 DateTime lastUpdateDate = DateTime.Now;
@@ -95,15 +94,15 @@ namespace PermacallTools.Repos.IncrementalGame
         /// <param name="playerID"></param>
         /// <param name="playerKey"></param>
         /// <returns></returns>
-        public static bool UpdatePlayer(Dictionary<string, int> buildings, Dictionary<string, int> upgrades, int playerID, string playerKey)
+        public static bool UpdatePlayer(IncrementalPlayer player)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
-                {"buildings", JsonConvert.SerializeObject(buildings)},
-                {"upgrades", JsonConvert.SerializeObject(upgrades)},
-                {"id", playerID},
+                {"buildings", JsonConvert.SerializeObject(player.Buildings)},
+                {"upgrades", JsonConvert.SerializeObject(player.Upgrades)},
+                {"id", player.ID},
             };
-            return DB.MainDB.UpdateQuery("UPDATE Player SET Buildings=?, Upgrades=?, LastUpdate=NOW() WHERE ID=? AND PlayerKey=?", parameters);
+            return DB.MainDB.UpdateQuery("UPDATE Player SET Buildings=?, Upgrades=?, LastUpdate=NOW() WHERE ID=?", parameters);
         }
 
         /// <summary>
@@ -112,7 +111,7 @@ namespace PermacallTools.Repos.IncrementalGame
         /// <param name="groupCode"></param>
         /// <param name="playerID"></param>
         /// <returns></returns>
-        public static bool UpdatePlayerGroupCode(string groupCode, int playerID)
+        public static bool UpdatePlayerGroupCode(string groupCode, string playerID)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
@@ -120,6 +119,16 @@ namespace PermacallTools.Repos.IncrementalGame
                 {"id", playerID},
             };
             return DB.MainDB.UpdateQuery("UPDATE Player SET GroupCode=? WHERE ID=?", parameters);
+        }
+
+        public static bool isGroupCodeDuplicate(string groupCode)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"groupcode", groupCode}
+            };
+            var result = DB.MainDB.GetOneResultQuery("SELECT COUNT(*) AS `COUNT` FROM PLAYER WHERE GroupCode=?", parameters);
+            return result.Get("COUNT").ToInt() >= 2;
         }
 
         /// <summary>
@@ -157,7 +166,7 @@ namespace PermacallTools.Repos.IncrementalGame
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static string GetPlayerDataString(int id)
+        public static string GetPlayerDataString(string id)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
@@ -165,72 +174,19 @@ namespace PermacallTools.Repos.IncrementalGame
             };
             var result = DB.MainDB.GetOneResultQuery("SELECT * FROM Player WHERE ID=?", parameters);
 
+            if (result == null) return null;
+            
             Dictionary<string, string> player = new Dictionary<string, string>();
-            if (result != null)
-            {
-                player["ID"] = result.Get("ID");
-                player["Identifier"] = result.Get("Identifier");
-                player["Username"] = result.Get("Name");
-                player["Buildings"] = result.Get("Buildings");
-                player["Upgrades"] = result.Get("Upgrades");
-                player["LastUpdate"] = result.Get("LastUpdate");
-            }
+
+            player["ID"] = result.Get("ID");
+            player["Identifier"] = result.Get("Identifier");
+            player["Username"] = result.Get("Name");
+            player["Buildings"] = result.Get("Buildings");
+            player["Upgrades"] = result.Get("Upgrades");
+            player["LastUpdate"] = result.Get("LastUpdate");
+
 
             return JsonConvert.SerializeObject(player);
-        }
-        /// <summary>
-        /// Checks if the player id/key combination is valid
-        /// </summary>
-        /// <returns>Returns True if id/key combination is valid, and false if invalid</returns>
-        public static bool CheckPlayerKey(string playerID, string playerKey)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>()
-            {
-                {"playerID", playerID.ToString()},
-                {"playerKey" , playerKey }
-            };
-            return DB.MainDB.CheckExist("SELECT ID FROM Player WHERE ID=? AND PlayerKey=?", parameters);
-        }
-
-        /// <summary>
-        /// Updates player id/key combination
-        /// </summary>
-        /// <param name="playerID"></param>
-        /// <param name="oldPlayerKey"></param>
-        /// <returns></returns>
-        public static bool UpdatePlayerKey(int playerID, string oldPlayerKey)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>()
-            {
-                {"playerKey" , IncrementPlayerKey(oldPlayerKey) },
-                {"playerID", playerID.ToString()},
-            };
-            return DB.MainDB.UpdateQuery("UPDAET Player SET PlayerKey=? WHERE ID=?", parameters);
-        }
-
-        /// <summary>
-        /// Increments the player key by 1 step
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string IncrementPlayerKey(string input)
-        {
-            var half1 = SHA1(input.Substring(0, input.Length / 2));
-            var half2 = SHA1(input.Substring(input.Length / 2));
-            var result = SHA1(half1 + "IncMP" + half2);
-            if (result.Length <= 8) return result;
-            return result.Substring((result.Length - 8) / 2, (result.Length - 8) / 2 + 8);
-        }
-
-        /// <summary>
-        /// SHA1 hash used in incrementation process.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        private static string SHA1(string input)
-        {
-            var hash = (new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input)));
-            return string.Join("", hash.Select(x => x.ToString("X2")).ToArray());
         }
 
     }

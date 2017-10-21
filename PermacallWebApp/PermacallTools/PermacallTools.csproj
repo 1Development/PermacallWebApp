@@ -159,6 +159,7 @@
     <Compile Include="Logic\MPInc\MPIncLogin.cs" />
     <Compile Include="LoginData.cs" />
     <Compile Include="Models\IncrementalGame\DataPair.cs" />
+    <Compile Include="Models\IncrementalGame\IncAccount.cs" />
     <Compile Include="Models\IncrementalGame\IncrementalPlayer.cs" />
     <Compile Include="Models\WoWGuild\Guild.cs" />
     <Compile Include="Models\WoWGuild\HistoryModel.cs" />

@@ -10,7 +10,7 @@ namespace PermacallTools.Logic.MPInc
 {
     public class MPIncLogin
     {
-        //public static IncrementalPlayer GetCurrentUser(HttpContext context)
+        //public static IncAccount GetCurrentUser(HttpContext context)
         //{
         //    string sessionKey;
         //    if (!String.IsNullOrEmpty(context.Request.Cookies["SessionData"]?["SessionKey"]))

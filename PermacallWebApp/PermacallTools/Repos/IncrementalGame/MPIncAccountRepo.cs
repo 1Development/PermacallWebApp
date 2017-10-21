@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using PCDataDLL;
+using PermacallTools.Models.IncrementalGame;
 
 namespace PermacallTools.Repos.IncrementalGame
 {
@@ -31,7 +32,7 @@ namespace PermacallTools.Repos.IncrementalGame
             {
                 {"username", username.ToLower()}
             };
-            var result = PCDataDLL.DB.MPInc.CheckExist("SELECT SALT FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
+            var result = PCDataDLL.DB.MPInc.CheckExist("SELECT ID FROM ACCOUNT WHERE LOWER(USERNAME) = ?", parameters);
             if (!result) return true;
             return false;
         }
@@ -54,49 +55,54 @@ namespace PermacallTools.Repos.IncrementalGame
             return new Tuple<bool, string>(false, "NOCONNECTION");
         }
 
-        public static bool SetSessionKey(string username, string sessionKey)
+        public static bool SetSessionKey(string id, string sessionKey)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"sessionKey", sessionKey},
-                {"username", username.ToLower()}
+                {"id", id}
             };
-            var result = DB.MPInc.UpdateQuery("UPDATE ACCOUNT SET SESSIONKEY=? WHERE LOWER(USERNAME) = ?", parameters);
+            var result = DB.MPInc.UpdateQuery("UPDATE ACCOUNT SET SESSIONKEY=? WHERE ID = ?", parameters);
 
             return result;
         }
 
-        //public static User GetUser(string sessionKey)
-        //{
-        //    Dictionary<string, object> parameters = new Dictionary<string, object>()
-        //    {
-        //        {"sessionkey", sessionKey}
-        //    };
-        //    var result = DB.MPInc.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION, LASTSTRIKE FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
+        public static IncAccount GetUser(string sessionKey)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"sessionkey", sessionKey}
+            };
+            var result = DB.MPInc.GetOneResultQuery("SELECT ID, USERNAME FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
 
-        //    if (result != null)
-        //    {
-        //        if (result.Get("ID") != null)
-        //        {
-        //            PCAuthLib.User.PermissionGroup permissionGroup;
-        //            Enum.TryParse(result.Get("PERMISSION"), out permissionGroup);
-        //            DateTime lastStrike = DateTime.Now;
-        //            DateTime.TryParse(result.Get("LASTSTRIKE"), out lastStrike);
-        //            return new User(result.Get("ID").ToInt(),
-        //                result.Get("NORMALCOUNT").ToInt(),
-        //                result.Get("OPERATORCOUNT").ToInt(),
-        //                result.Get("USERNAME").ToString(),
-        //                result.Get("STRIKES").ToInt(),
-        //                permissionGroup)
-        //            {
-        //                LastStrike = lastStrike
-        //            };
-        //        }
-        //        else
-        //            return new User(0, 0, 0, "NOSESSION", 0, PCAuthLib.User.PermissionGroup.GUEST);
+            if (result != null && result.Get("ID") != null)
+                return new IncAccount(result.Get("ID"), result.Get("Username"));
 
-        //    }
-        //    return new User(-1, 0, 0, "NOCONNECTION", 0, PCAuthLib.User.PermissionGroup.GUEST);
-        //}
+            return new IncAccount("0", "null");
+        }
+
+
+        public static bool InsertNewAccount(string username, string password, string salt)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"username", username.ToLower()},
+                {"password", password},
+                {"salt", salt }
+            };
+            var result = DB.MainDB.InsertQuery("INSERT INTO ACCOUNT(USERNAME, PASSWORD, SALT) VALUES (?, ?, ?)", parameters);
+
+            return result;
+        }
+
+        public static bool CheckPlayerAccount(string id, string accountID) 
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"id", id},
+                {"accountID", accountID}
+            };
+            return DB.MainDB.CheckExist("SELECT ID FROM Player WHERE ID = ? AND AccountID = ?", parameters);
+        }
     }
 }
