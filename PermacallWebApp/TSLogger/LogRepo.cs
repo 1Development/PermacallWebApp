@@ -70,10 +70,10 @@ namespace TSLogger
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("[");
-            sb.Append(DateTime.Now.ToShortTimeString());
+            sb.Append(DateTime.Now.ToLongTimeString());
             sb.Append("] ");
             sb.Append(toWrite);
-            File.WriteAllLines("C:\\www\\TSLoggerLog.txt", new []{ sb.ToString() } );
+            File.AppendAllLines("C:\\www\\TSLoggerLog.txt", new []{ sb.ToString() } );
         }
     }
 }
