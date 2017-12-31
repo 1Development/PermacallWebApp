@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Configuration.Install;
 using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
@@ -15,13 +17,21 @@ namespace PermacallTeamspeakLogger
         /// </summary>
         static void Main(string[] args)
         {
+            try
             {
+
+
                 ServiceBase[] ServicesToRun;
                 ServicesToRun = new ServiceBase[]
                 {
                     new LoggerService()
                 };
                 ServiceBase.Run(ServicesToRun);
+            }
+            catch (Exception e)
+            {
+                LogRepo.WriteToFile(e.Message);
+                throw;
             }
         }
     }

@@ -10,7 +10,7 @@ using TS3QueryLib.Core.Common.Responses;
 using TS3QueryLib.Core.Server;
 using TS3QueryLib.Core.Server.Entities;
 
-namespace PermacallTeamspeakLogger
+namespace TSLogger
 {
     public class LogRepo
     {
@@ -61,8 +61,7 @@ namespace PermacallTeamspeakLogger
             }
             catch (Exception e)
             {
-                WriteToFile(e.Message);
-                WriteToFile(e.StackTrace);
+                WriteToFile(e.ToString());
             }
             return false;
         }

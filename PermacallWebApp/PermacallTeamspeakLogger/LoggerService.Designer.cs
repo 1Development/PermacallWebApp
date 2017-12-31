@@ -33,7 +33,7 @@
             // 
             // logTimer
             // 
-            this.logTimer.Interval = 300000;
+            this.logTimer.Interval = 30000;
             this.logTimer.Tick += new System.EventHandler(this.logTimer_Tick);
             // 
             // LoggerService

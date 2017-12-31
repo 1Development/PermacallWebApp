@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCAuthLib", "PCAuthLib\PCAu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermacallTeamspeakLogger", "PermacallTeamspeakLogger\PermacallTeamspeakLogger.csproj", "{6B427409-4C01-4CA1-B2BA-9084C96B8B6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSLogger", "TSLogger\TSLogger.csproj", "{AFC57CDF-AD88-4D44-912E-406233AD88A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{6B427409-4C01-4CA1-B2BA-9084C96B8B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B427409-4C01-4CA1-B2BA-9084C96B8B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B427409-4C01-4CA1-B2BA-9084C96B8B6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
