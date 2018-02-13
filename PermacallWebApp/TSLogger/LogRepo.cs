@@ -19,6 +19,7 @@ namespace TSLogger
             WriteToFile("Starting Logging");
             try
             {
+                ListResponse<ChannelListEntry> channelList;
                 ListResponse<ClientListEntry> clientList;
                 try
                 {
@@ -30,6 +31,7 @@ namespace TSLogger
 
                         {
                             // REAL EXCECUTED CODE
+                            channelList = queryRunner.GetChannelList();
                             clientList = queryRunner.GetClientList();
                         }
                         queryRunner.Logout();
@@ -37,6 +39,7 @@ namespace TSLogger
                 }
                 catch (SocketException)
                 {
+                    channelList = new ListResponse<ChannelListEntry>();
                     clientList = new ListResponse<ClientListEntry>();
                 }
 
@@ -45,14 +48,36 @@ namespace TSLogger
                 List<Dictionary<string, object>> parameterList = new List<Dictionary<string, object>>();
                 foreach (var client in clientList)
                 {
-                    queries.Add("INSERT INTO TSLoggedUser(TSChannelID, TSUserID) VALUES(?, ?)");
+                    queries.Add("INSERT INTO tslog_loggeduser(TSChannelID, TSUserID) VALUES(?, ?)");
                     Dictionary<string, object> parameters = new Dictionary<string, object>()
                     {
                         {"channelID", client.ChannelId.ToString()},
                         {"userID", client.ClientDatabaseId.ToString()}
                     };
                     parameterList.Add(parameters);
+
+                    queries.Add("INSERT INTO tslog_TSUser(TSUserID, TSUsername) VALUES(?, ?) ON DUPLICATE KEY UPDATE TSUsername=?");
+                    parameters = new Dictionary<string, object>()
+                    {
+                        {"TSUserID", client.ClientDatabaseId.ToString()},
+                        {"TSUsername", client.Nickname},
+                        {"TSUsername2", client.Nickname}
+                    };
+                    parameterList.Add(parameters);
                 }
+
+                foreach (var channel in channelList)
+                {
+                    queries.Add("INSERT INTO tslog_channel(channelID, channelName) VALUES(?, ?) ON DUPLICATE KEY UPDATE channelName=?");
+                    Dictionary<string, object> parameters = new Dictionary<string, object>()
+                    {
+                        {"channelID", channel.ChannelId},
+                        {"channelName", channel.Name},
+                        {"channelName2", channel.Name}
+                    };
+                    parameterList.Add(parameters);
+                }
+
 
                 var result = DB.MainDB.InsertMultiQuery(queries, parameterList);
 
