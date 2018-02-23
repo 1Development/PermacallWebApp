@@ -23,7 +23,7 @@ namespace TSLogger
                 ListResponse<ClientListEntry> clientList;
                 try
                 {
-                    using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
+                    using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("192.168.0.220", 10011)))
                     {
                         queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                         queryRunner.SelectVirtualServerById(1);
@@ -66,9 +66,13 @@ namespace TSLogger
                     parameterList.Add(parameters);
                 }
 
+
+                queries.Add("UPDATE tslog_channel SET doesExist=0");
+                parameterList.Add(new Dictionary<string, object>());
+
                 foreach (var channel in channelList)
                 {
-                    queries.Add("INSERT INTO tslog_channel(channelID, channelName) VALUES(?, ?) ON DUPLICATE KEY UPDATE channelName=?");
+                    queries.Add("INSERT INTO tslog_channel(channelID, channelName) VALUES(?, ?) ON DUPLICATE KEY UPDATE channelName=?, doesExist=1");
                     Dictionary<string, object> parameters = new Dictionary<string, object>()
                     {
                         {"channelID", channel.ChannelId},
