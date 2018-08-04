@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using PCAuthLib;
 using PCDataDLL;
 using TS3QueryLib.Core;
 using TS3QueryLib.Core.Common;
@@ -14,6 +16,7 @@ namespace TSLogger
 {
     public class LogRepo
     {
+
         public static bool Log()
         {
             WriteToFile("Starting Logging");
@@ -31,7 +34,7 @@ namespace TSLogger
 
                         {
                             // REAL EXCECUTED CODE
-                            channelList = queryRunner.GetChannelList();
+                            channelList = queryRunner.GetChannelList(true);
                             clientList = queryRunner.GetClientList();
                         }
                         queryRunner.Logout();
@@ -72,18 +75,22 @@ namespace TSLogger
 
                 foreach (var channel in channelList)
                 {
-                    queries.Add("INSERT INTO tslog_channel(channelID, channelName) VALUES(?, ?) ON DUPLICATE KEY UPDATE channelName=?, doesExist=1");
+                    queries.Add("INSERT INTO tslog_channel(channelID, channelName, parentChannelID) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE channelName=?, doesExist=1, parentChannelID=?");
                     Dictionary<string, object> parameters = new Dictionary<string, object>()
                     {
                         {"channelID", channel.ChannelId},
                         {"channelName", channel.Name},
-                        {"channelName2", channel.Name}
+                        {"parentChannelID", channel.ParentChannelId},
+                        {"channelName2", channel.Name},
+                        {"parentChannelID2", channel.ParentChannelId}
                     };
                     parameterList.Add(parameters);
                 }
 
 
                 var result = DB.MainDB.InsertMultiQuery(queries, parameterList);
+
+                
 
                 WriteToFile("Done with Logging");
                 return result;
@@ -104,5 +111,56 @@ namespace TSLogger
             sb.Append(toWrite);
             File.AppendAllLines("C:\\www\\TSLoggerLog.txt", new []{ sb.ToString() } );
         }
+
+        public static void OrderGamingChannels()
+        {
+            ListResponse<ChannelListEntry> channelList;
+            List<uint> popularityRanks = GetGamingChannelPopularities();
+            if (popularityRanks.Count <= 1) return;
+            try
+            {
+                using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("192.168.0.220", 10011)))
+                {
+                    queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
+                    queryRunner.SelectVirtualServerById(1);
+                    queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
+
+                    {
+
+                        channelList = queryRunner.GetChannelList(true);
+
+                        uint? currentOrder = popularityRanks[0];
+                        foreach (var chnl in popularityRanks)
+                        {
+                            if (channelList.Values.Exists(x => x.ChannelId == chnl))
+                            {
+                                queryRunner.EditChannel(chnl, new ChannelModification() { ChannelOrder = currentOrder });
+                                currentOrder = chnl;
+                            }
+                        }
+                        queryRunner.EditChannel(8, new ChannelModification() { ChannelOrder = currentOrder }); // SET RANDOMGAME LAST
+                    }
+                    queryRunner.Logout();
+                }
+            }
+            catch (SocketException)
+            {
+            }
+        }
+
+
+        public static List<uint> GetGamingChannelPopularities()
+        {
+            List<uint> rankResults = new List<uint>();
+            string sql =
+                "SELECT channel.channelID FROM tslog_tsuser tsuser INNER JOIN tslog_loggeduser log ON log.TSUserID = tsuser.TSUserID AND tsuser.TSUserID NOT IN (1, 10) AND log.Timestamp > DATE_SUB(CURDATE(), INTERVAL 30 DAY) RIGHT OUTER JOIN tslog_channel channel ON log.TSChannelID = channel.channelID WHERE channel.parentChannelID = 2 and channel.doesExist = 1 GROUP BY channel.channelID ORDER BY COUNT(channel.channelID) DESC";
+            List<DBResult> results = DB.MainDB.GetMultipleResultsQuery(sql, null);
+            foreach (var dbResult in results)
+            {
+                rankResults.Add(dbResult.Get("channelID").ToUInt());
+            }
+            return rankResults;
+        }
     }
+
 }

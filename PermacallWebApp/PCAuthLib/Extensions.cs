@@ -17,6 +17,19 @@ namespace PCAuthLib
 
         }
 
+        public static double ToDouble(this object obj)
+        {
+            try
+            {
+                return Convert.ToDouble(obj);
+            }
+            catch (InvalidCastException)
+            {
+                return -1;
+            }
+
+        }
+
         public static uint ToUInt(this object obj)
         {
             try

@@ -31,11 +31,12 @@
             this.components = new System.ComponentModel.Container();
             this.bntLogNow = new System.Windows.Forms.Button();
             this.logTimer = new System.Windows.Forms.Timer(this.components);
+            this.btnOrder = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // bntLogNow
             // 
-            this.bntLogNow.Location = new System.Drawing.Point(50, 24);
+            this.bntLogNow.Location = new System.Drawing.Point(49, 12);
             this.bntLogNow.Name = "bntLogNow";
             this.bntLogNow.Size = new System.Drawing.Size(75, 23);
             this.bntLogNow.TabIndex = 0;
@@ -49,11 +50,22 @@
             this.logTimer.Interval = 300000;
             this.logTimer.Tick += new System.EventHandler(this.logTimer_Tick);
             // 
+            // btnOrder
+            // 
+            this.btnOrder.Location = new System.Drawing.Point(49, 41);
+            this.btnOrder.Name = "btnOrder";
+            this.btnOrder.Size = new System.Drawing.Size(75, 23);
+            this.btnOrder.TabIndex = 1;
+            this.btnOrder.Text = "Order Now";
+            this.btnOrder.UseVisualStyleBackColor = true;
+            this.btnOrder.Click += new System.EventHandler(this.btnOrder_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(184, 70);
+            this.Controls.Add(this.btnOrder);
             this.Controls.Add(this.bntLogNow);
             this.MaximumSize = new System.Drawing.Size(200, 109);
             this.MinimumSize = new System.Drawing.Size(200, 109);
@@ -67,6 +79,7 @@
 
         private System.Windows.Forms.Button bntLogNow;
         private System.Windows.Forms.Timer logTimer;
+        private System.Windows.Forms.Button btnOrder;
     }
 }
 

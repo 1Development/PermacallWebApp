@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 
 namespace PCDataDLL
 {
@@ -199,7 +200,7 @@ namespace PCDataDLL
             string sql = "";
             Dictionary<string, object> parameters;
             MySqlTransaction transaction = null;
-            
+
 
             try
             {
@@ -212,7 +213,7 @@ namespace PCDataDLL
                     for (int i = 0; i < SQLquerys.Count; i++)
                     {
                         sql = SQLquerys[i];
-                        using (MySqlCommand cmd = new MySqlCommand(sql, conn,transaction))
+                        using (MySqlCommand cmd = new MySqlCommand(sql, conn, transaction))
                         {
                             parameters = parametersList[i];
 
@@ -226,13 +227,25 @@ namespace PCDataDLL
                                 cmd.Parameters.Add(new MySqlParameter(parameter.Key, parameter.Value));
                             }
 
-                            successes += cmd.ExecuteNonQuery();
+                            int thisSuccesses = cmd.ExecuteNonQuery();
+                            if (thisSuccesses > 0)
+                            {
+                                successes++;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Sql statement failed: ");
+                                Console.WriteLine(cmd.CommandText);
+                                Console.WriteLine(JsonConvert.SerializeObject(cmd.Parameters));
+
+                            }
                         }
                     }
 
                     transaction.Commit();
 
                 }
+
                 return successes == SQLquerys.Count;
 
             }
