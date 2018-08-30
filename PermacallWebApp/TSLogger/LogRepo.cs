@@ -7,6 +7,7 @@ using System.Text;
 using PCAuthLib;
 using PCDataDLL;
 using TS3QueryLib.Core;
+using TS3QueryLib.Core.CommandHandling;
 using TS3QueryLib.Core.Common;
 using TS3QueryLib.Core.Common.Responses;
 using TS3QueryLib.Core.Server;
@@ -30,12 +31,31 @@ namespace TSLogger
                     {
                         queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                         queryRunner.SelectVirtualServerById(1);
-                        queryRunner.UpdateCurrentQueryClient(new ClientModification {Nickname = "PermacallWebApp"});
+                        queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
                         {
                             // REAL EXCECUTED CODE
                             channelList = queryRunner.GetChannelList(true);
-                            clientList = queryRunner.GetClientList();
+                            clientList = queryRunner.GetClientList(true);
+
+                            //REMOVE AFK USERS FROM NON-AFK
+                            foreach (var client in clientList)
+                            {
+                                if (client.ServerGroups.Contains(13) &&
+                                    client.ClientIdleDuration != null)
+                                {
+                                    if (((TimeSpan)client.ClientIdleDuration).TotalHours > 4)
+                                    {
+                                        queryRunner.DeleteClientFromServerGroup(13, client.ClientDatabaseId);
+                                        queryRunner.SendTextMessage(MessageTarget.Client, client.ClientId,
+                                            "NON-AFK is not meant for AFK users, and since you have been idle for over 4 hours you have been moved to AFK");
+                                    }
+                                    else if (((TimeSpan)client.ClientIdleDuration).TotalHours > 3)
+                                        queryRunner.SendTextMessage(MessageTarget.Client, client.ClientId,
+                                            "NON-AFK is not meant for AFK users, and you have been idle for over 3 hours now. If you are truly not AFK take some action the server will see(like muting/unmuting, moving, AFK/unAFK)");
+
+                                }
+                            }
                         }
                         queryRunner.Logout();
                     }
@@ -90,7 +110,7 @@ namespace TSLogger
 
                 var result = DB.MainDB.InsertMultiQuery(queries, parameterList);
 
-                
+
 
                 WriteToFile("Done with Logging");
                 return result;
@@ -109,7 +129,7 @@ namespace TSLogger
             sb.Append(DateTime.Now.ToLongTimeString());
             sb.Append("] ");
             sb.Append(toWrite);
-            File.AppendAllLines("C:\\www\\TSLoggerLog.txt", new []{ sb.ToString() } );
+            File.AppendAllLines("C:\\www\\TSLoggerLog.txt", new[] { sb.ToString() });
         }
 
         public static void OrderGamingChannels()
@@ -134,7 +154,7 @@ namespace TSLogger
                         {
                             if (channelList.Values.Exists(x => x.ChannelId == chnl.Id))
                             {
-                                queryRunner.EditChannel(chnl.Id, new ChannelModification() { ChannelOrder = currentOrder, Description = "Channel Popularity Score: " + Math.Round(chnl.Score)});
+                                queryRunner.EditChannel(chnl.Id, new ChannelModification() { ChannelOrder = currentOrder, Description = "Channel Popularity Score: " + Math.Round(chnl.Score) });
                                 currentOrder = chnl.Id;
                             }
                         }
@@ -176,7 +196,7 @@ namespace TSLogger
 
             foreach (var dbResult in results1)
             {
-                if(!scores.ContainsKey(dbResult.Get("channelID").ToUInt()))
+                if (!scores.ContainsKey(dbResult.Get("channelID").ToUInt()))
                     scores.Add(dbResult.Get("channelID").ToUInt(), new ChannelScore(dbResult.Get("channelName"), dbResult.Get("channelID").ToUInt()));
                 scores[dbResult.Get("channelID").ToUInt()].Score += dbResult.Get("score").ToDouble();
             }
