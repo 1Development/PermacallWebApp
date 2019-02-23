@@ -20,22 +20,67 @@ namespace TSLogger
 
         private void logTimer_Tick(object sender, EventArgs e)
         {
-            LogRepo.Log();
+            try
+            {
+                LogRepo.Log();
+            }
+            catch (Exception ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Exception encountered when attempting to log the current users");
+                sb.AppendLine(ex.Message);
+                sb.AppendLine(ex.StackTrace);
+                MailClass.SendNotificationMail(sb.ToString());
+            }
+
             if ((DateTime.Now - LastOrderedTime).TotalHours > 24 && DateTime.Now.Hour == 3)
             {
                 LastOrderedTime = DateTime.Now;
-                LogRepo.OrderGamingChannels();
+                try
+                {
+                    LogRepo.OrderGamingChannels();
+                }
+                catch (Exception ex)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("Exception encountered when attempting to Order the gaming channels of the teamspeak server.");
+                    sb.AppendLine(ex.Message);
+                    sb.AppendLine(ex.StackTrace);
+                    MailClass.SendNotificationMail(sb.ToString());
+                }
             }
         }
 
         private void bntLogNow_Click(object sender, EventArgs e)
         {
-            LogRepo.Log();
+            try
+            {
+                LogRepo.Log();
+            }
+            catch (Exception ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Exception encountered when attempting to log the current users");
+                sb.AppendLine(ex.Message);
+                sb.AppendLine(ex.StackTrace);
+                MailClass.SendNotificationMail(sb.ToString());
+            }
         }
 
         private void btnOrder_Click(object sender, EventArgs e)
         {
-            LogRepo.OrderGamingChannels();
+            try
+            {
+                LogRepo.OrderGamingChannels();
+            }
+            catch (Exception ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Exception encountered when attempting to Order the gaming channels of the teamspeak server.");
+                sb.AppendLine(ex.Message);
+                sb.AppendLine(ex.StackTrace);
+                MailClass.SendNotificationMail(sb.ToString());
+            }
         }
     }
 }

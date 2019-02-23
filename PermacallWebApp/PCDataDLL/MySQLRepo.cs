@@ -149,7 +149,7 @@ namespace PCDataDLL
                 }
 
             }
-            catch (MySqlException)
+            catch (MySqlException e )
             {
                 return null;
             }
@@ -255,7 +255,7 @@ namespace PCDataDLL
 
                 Console.WriteLine(e);
                 Console.WriteLine(e.Message);
-                return false;
+                throw e;
             }
         }
 

@@ -61,5 +61,10 @@ namespace PCDataDLL
         {
             get { return LoginDataDict()["IncrementalGameDBString"]; }
         }
+
+        public static string HostEmailPassword
+        {
+            get { return LoginDataDict()["YouriHostEmailPassword"]; }
+        }
     }
 }
