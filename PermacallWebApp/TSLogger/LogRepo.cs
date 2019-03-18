@@ -27,7 +27,7 @@ namespace TSLogger
                 ListResponse<ClientListEntry> clientList;
                 try
                 {
-                    using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("192.168.0.220", 10011)))
+                    using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("192.168.0.230", 10011)))
                     {
                         queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                         queryRunner.SelectVirtualServerById(1);
@@ -140,7 +140,7 @@ namespace TSLogger
             if (popularityRanks.Count <= 1) return;
             try
             {
-                using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("192.168.0.220", 10011)))
+                using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("192.168.0.230", 10011)))
                 {
                     queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
                     queryRunner.SelectVirtualServerById(1);
