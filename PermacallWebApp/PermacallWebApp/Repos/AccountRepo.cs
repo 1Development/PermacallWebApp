@@ -79,7 +79,7 @@ namespace PermacallWebApp.Repos
             {
                 {"sessionkey", sessionKey}
             };
-            var result = DB.MainDB.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION, LASTSTRIKE FROM ACCOUNT WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
+            var result = DB.MainDB.GetOneResultQuery("SELECT ID, NORMALCOUNT, OPERATORCOUNT, USERNAME, STRIKES, PERMISSION, LASTSTRIKE FROM account WHERE SESSIONKEY = ? AND ENABLED=1", parameters);
 
             if (result != null)
             {
