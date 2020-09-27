@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermacallWebApp", "PermacallWebApp\PermacallWebApp.csproj", "{38AB8E1B-D94D-4048-897D-0BBCAA74E935}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCAuthLib", "PCAuthLib\PCAuthLib.csproj", "{0B819A53-4E74-4157-8588-F6FAD7253C3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSLogger", "TSLogger\TSLogger.csproj", "{AFC57CDF-AD88-4D44-912E-406233AD88A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj", "{3B87621B-AB33-4CC4-B50A-C5EB901F58E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFC57CDF-AD88-4D44-912E-406233AD88A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B87621B-AB33-4CC4-B50A-C5EB901F58E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B87621B-AB33-4CC4-B50A-C5EB901F58E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B87621B-AB33-4CC4-B50A-C5EB901F58E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B87621B-AB33-4CC4-B50A-C5EB901F58E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
