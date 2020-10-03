@@ -1,0 +1,197 @@
+﻿@using PCAuthLibCore
+@{
+    ViewBag.Title = "Tools";
+    var currentUser = Login.GetCurrentUser(Context);
+}
+<head>
+    <link rel="stylesheet" href="~/css/WowTools.css" />
+</head>
+
+
+<div class="contentBox col-lg-12 col-md-12" style="overflow-x:auto; font-weight: bold;">
+
+    <table id="WowTable" class="table table-bordered" style="max-width: 100%">
+        <thead>
+            <tr style="background-color: rgba(255, 255, 255, 0.2);">
+                <th>Player</th>
+                <th>Avg. ILvL</th>
+                <th>Main Hand</th>
+                <th>Off Hand</th>
+                <th>Head</th>
+                <th>Neck</th>
+                <th>Shoulder</th>
+                <th>Back</th>
+                <th>Chest</th>
+                <th>Wrist</th>
+                <th>Hands</th>
+                <th>Waist</th>
+                <th>Legs</th>
+                <th>Feet</th>
+                <th>Ring1</th>
+                <th>Ring2</th>
+                <th>Trinket1</th>
+                <th>Trinket2</th>
+            </tr>
+        </thead>
+        <tbody style="font-size: 125%; padding:3px">
+        </tbody>
+
+    </table>
+    <br /><br />
+    @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
+    {
+    <div>
+        <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
+        <form id="addDiv" style="display: none;">
+            <h4>Character name:</h4>
+            <input name="name" />
+            <h4>Realm:</h4>
+            <input name="realm" />
+            <br />
+            <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
+            <br />
+            <p id="ErrorMessage" class="text-danger"></p>
+        </form>
+    </div>
+    }
+    @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
+    {
+    <script>
+        window.CanDeleteCharacters = true;
+    </script>
+    }
+
+    @section Scripts {
+        <script type="text/javascript">
+
+            var allSlots = [
+                'Main Hand',
+                'Off Hand',
+                'Head',
+                'Neck',
+                'Shoulders',
+                'Back',
+                'Chest',
+                'Wrist',
+                'Hands',
+                'Waist',
+                'Legs',
+                'Feet',
+                'Ring 1',
+                'Ring 2',
+                'Trinket 1',
+                'Trinket 2'
+            ];
+            var allCharacters;
+
+            function RenderTable() {
+                fetch('/tools/api/WowToolsApi/GetAllCharacters')
+                    .then(response => response.json())
+                    .then(data => {
+                        $("#WowTable tbody").empty();
+                        allCharacters = data;
+                        displayAndProcess(data);
+                    });
+            }
+
+            RenderTable();
+
+            function displayAndProcess(data) {
+                data.forEach(character => {
+                    addCharacterToTable(character);
+                    fetch('/tools/api/WowToolsApi/GetCharacterItems/' + character.id)
+                        .then(response => response.json())
+                        .then(itemData => updateCharacter(itemData))
+                });
+            }
+
+            function addCharacterToTable(character) {
+                console.log(character);
+                var html = '<tr id="wowTableCharacter_' + character.id + '">' +
+                    '<td>' + character.name + '</td><td></td>';
+                allSlots.forEach(() => {
+                    html = html + '<td></td>';
+                });
+                html = html + '</tr>';
+                $('#WowTable tbody').append(html);
+            }
+
+            function updateCharacter(character) {
+                console.log(character);
+
+                allCharacters.find(char => char.id == character.character.id).averageItemLevel = character.averageItemLevel;
+
+                var innerhtml = '<td>' + character.character.name;
+                if (window.CanDeleteCharacters) {
+                    innerhtml = innerhtml + '<a class="text-danger" onclick="RemoveCharacter(' + character.character.id + ')">X</a>'
+                }
+                innerhtml = innerhtml + '</td>' +
+                    '<td>' + character.equippedItemLevel + '/' + character.averageItemLevel + '</td>';
+
+                allSlots.forEach(slotName => {
+                    var item = character.items.find(item => item.slot == slotName);
+                    if (item) {
+                        innerhtml = innerhtml + '<td class="ItemQuality' + item.quality + '">' + item.level + '</td>';
+                    }
+                    else {
+                        innerhtml = innerhtml + '<td></td>';
+                    }
+                });
+
+                $('#wowTableCharacter_' + character.character.id).html(innerhtml);
+                sortTable($('#WowTable'), 'desc');
+            }
+            function AddCharacter() {
+                var form = {};
+                $.each($('#addDiv').serializeArray(), function (i, field) {
+                    form[field.name] = field.value;
+                });
+                fetch('/tools/api/WowToolsApi/AddCharacter/' + form['realm'] + "/" + form['name'],
+                    { method: 'POST' })
+                    .then(function (response) {
+                        return response.text()
+                            .then(data => {
+                                if (data != "") {
+                                    console.log(data);
+                                    $('#ErrorMessage').text(data);
+                                }
+                                else {
+                                    RenderTable();
+                                }
+                            })
+                    });
+                return false;
+            }
+
+            function ShowAddCharacter() {
+                if ($('#addDiv').is(":hidden")) {
+                    $('#addDiv').show();
+                    $('#ShowAddButton').text('Hide');
+                }
+                else {
+                    $('#addDiv').hide();
+                    $('#ShowAddButton').text('Add new Character')
+                }
+            }
+
+            function RemoveCharacter(id) {
+                if (confirm("Are you sure you want to remove " + allCharacters.find(char => char.id == id).name + '?')) {
+                    fetch('/tools/api/WowToolsApi/RemoveCharacter/' + id,
+                        { method: 'POST' })
+                        .then(function (response) {
+                            RenderTable();
+                        });
+                }
+            }
+
+            function sortTable(table, order) {
+                var asc = order === 'asc',
+                    tbody = table.find('tbody');
+
+                tbody.find('tr').sort(function (a, b) {
+                    return $('td:nth-child(2)', b).text().localeCompare($('td:nth-child(2)', a).text());
+                }).appendTo(tbody);
+            }
+        </script>
+    }
+</div>

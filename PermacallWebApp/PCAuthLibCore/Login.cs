@@ -4,13 +4,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
-namespace PCAuthLib
+namespace PCAuthLibCore
 {
     public static class Login
     {
         public static User GetCurrentUser(HttpContext context)
         {
-
+            //context.Request.
             string sessionKey;
             if (!String.IsNullOrEmpty(context.Request.Cookies["SessionKey"]))
             {

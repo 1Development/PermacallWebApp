@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using PCDataDLL;
 
-namespace PCAuthLib
+namespace PCAuthLibCore
 {
     public class AccountRepo
     {
-        private static DateTime lastCheck;
         public static Tuple<bool, string> GetSalt(string username)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()

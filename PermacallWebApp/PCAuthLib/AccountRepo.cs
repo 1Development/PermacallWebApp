@@ -6,7 +6,6 @@ namespace PCAuthLib
 {
     public class AccountRepo
     {
-        private static DateTime lastCheck;
         public static Tuple<bool, string> GetSalt(string username)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>()

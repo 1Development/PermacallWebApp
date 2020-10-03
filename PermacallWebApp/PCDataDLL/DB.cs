@@ -10,7 +10,6 @@ namespace PCDataDLL
     {
         private static MySQLRepo mainDB;
         private static MySQLRepo portFolioDB;
-        private static MySQLRepo mpInc;
         public static MySQLRepo MainDB
         {
             get

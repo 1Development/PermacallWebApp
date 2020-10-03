@@ -58,7 +58,6 @@ namespace PCDataDLL
                 Console.WriteLine(e);
                 Console.WriteLine(e.Message);
                 throw e;
-                return false;
             }
         }
 
@@ -110,7 +109,6 @@ namespace PCDataDLL
                 Console.WriteLine(e);
                 Console.WriteLine(e.Message);
                 throw e;
-                return null;
             }
         }
 

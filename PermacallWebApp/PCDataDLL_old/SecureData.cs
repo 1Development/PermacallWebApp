@@ -26,7 +26,6 @@ namespace PCDataDLL
                     "{ \"TSusername\": \"\", \"TSpassword\": \"\", \"PCDatabaseString\": \"\", \"YouriPortDBString\": \"\" }");
                 return LoginDataDict();
             }
-            return null;
         }
 
         public static string ServerUsername

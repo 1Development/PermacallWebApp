@@ -1,8 +1,17 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿
+@{
+    ViewBag.Title = "Tools";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="contentBox">
+    <h2>These are all the small tools I made</h2>
+
+    <br />
+
+    @Html.ActionLink("World of Warcraft ILvl Viewer", "Index", "WowTools")
+    <br/>
+    <a href="/SimpleEncrypter.zip">Simple Encryption Tool</a>
+
+
+
 </div>

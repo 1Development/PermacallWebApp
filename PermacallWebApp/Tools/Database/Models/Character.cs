@@ -7,5 +7,10 @@ namespace Tools.Database.Models
 {
     public class Character
     {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Realm { get; set; }
+        public DateTime AddedTime { get; set; }
+        public bool Removed { get; set; }
     }
 }

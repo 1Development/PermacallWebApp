@@ -8,7 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PCAuthLibCore;
+using PCDataDLL;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Tools.Database;
+using Tools.Services;
 
 namespace Tools
 {
@@ -25,8 +29,17 @@ namespace Tools
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            //services.AddDbContext<ToolContext>(options => options.UseMySQL(SecureData.));
+            services.AddDbContext<ToolContext>(options =>
+            {
+                options.UseMySql(SecureData.WowToolsString,
+                mySqlOptions => mySqlOptions.ServerVersion(new Version(5, 7, 31), ServerType.MySql));
+            });
+            //options.UseMySQL(SecureData.WowToolsString)
 
+            //.ServerVersion(new Version(5, 5, 51), ServerType.MySql)
+            //});
+
+            services.AddTransient<IWowToolsService, WowToolsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

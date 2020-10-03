@@ -26,7 +26,6 @@ namespace PCDataDLL
                     "{ \"TSusername\": \"\", \"TSpassword\": \"\", \"PCDatabaseString\": \"\", \"YouriPortDBString\": \"\" }");
                 return LoginDataDict();
             }
-            return null;
         }
 
         public static string ServerUsername
@@ -65,6 +64,15 @@ namespace PCDataDLL
         public static string HostEmailPassword
         {
             get { return LoginDataDict()["YouriHostEmailPassword"]; }
+        }
+
+        public static string BlizzardApiClientId
+        {
+            get { return LoginDataDict()["BlizzardApiClientId"]; }
+        }
+        public static string BlizzardApiClientSecret
+        {
+            get { return LoginDataDict()["BlizzardApiClientSecret"]; }
         }
     }
 }

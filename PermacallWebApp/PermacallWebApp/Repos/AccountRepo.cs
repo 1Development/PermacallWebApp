@@ -317,7 +317,7 @@ namespace PermacallWebApp.Repos
                         DB.MainDB.UpdateQuery(sql, parameters);
                     }
                 }
-
+#if !DEBUG
             using (QueryRunner queryRunner = new QueryRunner(new SyncTcpDispatcher("127.0.0.1", 10011)))
             {
                 queryRunner.Login(SecureData.ServerUsername, SecureData.ServerPassword).GetDumpString();
@@ -340,6 +340,7 @@ namespace PermacallWebApp.Repos
                 }
                 queryRunner.Logout();
             }
+#endif
 
             lastCheck = DateTime.Now;
             return true;

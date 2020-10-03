@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace PCAuthLib
+namespace PCAuthLibCore
 {
     public class User
     {

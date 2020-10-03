@@ -1,0 +1,39 @@
+﻿.navbar-brand {
+    color: rgba(153, 153, 153, 1);
+}
+
+.navbar-nav > li > a {
+    color: rgba(153, 153, 153, 1);
+    background-color: rgba(248, 248, 248, 0);
+}
+
+    .navbar-nav > li > a:hover,
+    .navbar-nav > li > a:focus {
+        color: rgba(255, 255, 255, 1);
+        background-color: rgba(248, 248, 248, 0);
+    }
+
+.navbar-nav > .active > a,
+.navbar-nav > .active > a:hover,
+.navbar-nav > .active > a:focus {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(8, 8, 8, 1);
+}
+
+.navbar-toggle {
+    border-color: #080808;
+}
+
+    .navbar-toggle:hover,
+    .navbar-toggle:focus {
+        background-color: #080808;
+    }
+
+    .navbar-toggle .icon-bar {
+        background-color: #080808;
+    }
+
+    .navbar-toggle:hover .icon-bar,
+    .navbar-toggle:focus .icon-bar {
+        background-color: #222222;
+    }

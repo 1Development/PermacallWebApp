@@ -29,20 +29,26 @@ namespace PermacallWebApp.Logic
             }
 
             string sessionKey;
-            if (!String.IsNullOrEmpty(context.Request.Cookies["SessionData"]?["SessionKey"]))
+            if (!String.IsNullOrEmpty(context.Request.Cookies.Get("SessionKey")?.Value))
             {
-                sessionKey = context.Request.Cookies["SessionData"]["SessionKey"];
+                sessionKey = context.Request.Cookies.Get("SessionKey").Value;
             }
             else sessionKey = "nothing";
 
+            if (!String.IsNullOrEmpty(context.Response.Cookies.Get("SessionKey")?.Value))
+            {
+                sessionKey = context.Response.Cookies.Get("SessionKey").Value;
+            }
 
             var sessionRe = AccountRepo.GetUser(sessionKey);
             if (sessionRe.ID > 0)
             {
                 CacheUserName(context.Request.UserHostAddress, sessionRe.Username);
 
-                context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
-                context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddHours(12);
+                context.Response.Cookies.Set(new HttpCookie("SessionKey", sessionKey)
+                {
+                    Expires = DateTime.Now.AddHours(12)
+                });
 
                 return sessionRe;
             }
@@ -106,8 +112,10 @@ namespace PermacallWebApp.Logic
             string sessionKey = GenerateRandomString(64);
             AccountRepo.SetSessionKey(username, sessionKey);
 
-            context.Response.Cookies["SessionData"]["SessionKey"] = sessionKey;
-            context.Response.Cookies["SessionData"].Expires = DateTime.Now.AddHours(12);
+            context.Response.Cookies.Set(new HttpCookie("SessionKey", sessionKey)
+            {
+                Expires = DateTime.Now.AddHours(12)
+            });
 
             return new Tuple<bool, string>(true, "Login Succesfull");
 

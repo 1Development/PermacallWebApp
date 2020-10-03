@@ -210,7 +210,7 @@ namespace PermacallWebApp.Controllers
                         queryRunner.Logout();
                     }
                 }
-                catch (SocketException e)
+                catch
                 {
                     viewModel.ErrorMessage = "Teamspeak server appears to be down";
                 }

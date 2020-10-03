@@ -1,0 +1,18 @@
+﻿.ItemQualityArtifact {
+    background-color: #e6cc80;
+}
+.ItemQualityLegendary {
+    background-color: #ff8000;
+}
+.ItemQualityEpic {
+    background-color: #a335ee;
+}
+.ItemQualityRare {
+    background-color: #0070dd;
+}
+.ItemQualityUncommon {
+    background-color: #1eff00;
+}
+.ItemQualityCommon {
+    background-color: #ffffff;
+}

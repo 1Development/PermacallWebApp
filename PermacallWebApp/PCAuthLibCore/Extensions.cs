@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PCAuthLib
+namespace PCAuthLibCore
 {
     public static class Extensions
     {
