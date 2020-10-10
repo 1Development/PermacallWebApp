@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tools.Database;
 
 namespace Tools.Migrations
 {
     [DbContext(typeof(ToolContext))]
-    partial class ToolContextModelSnapshot : ModelSnapshot
+    [Migration("20201010120028_ClassRacePlayerName")]
+    partial class ClassRacePlayerName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

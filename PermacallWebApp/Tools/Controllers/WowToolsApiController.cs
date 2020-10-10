@@ -28,15 +28,15 @@ namespace Tools.Controllers
             return Ok(_wowToolsService.GetAllCharacters());
         }
 
-        [HttpPost("AddCharacter/{realmslug}/{characterName}")]
-        public IActionResult AddCharacter(string realmslug, string characterName)
+        [HttpPost("AddCharacter/{playerName}/{realmslug}/{characterName}")]
+        public IActionResult AddCharacter(string playerName, string realmslug, string characterName)
         {
             if (Login.GetCurrentUser(HttpContext).Permission < PCAuthLibCore.User.PermissionGroup.OPERATOR)
             {
                 return Unauthorized();
             }
 
-            return Ok(_wowToolsService.AddCharacter(characterName, realmslug));
+            return Ok(_wowToolsService.AddCharacter(playerName, characterName, realmslug));
         }
 
         [HttpPost("RemoveCharacter/{id}")]

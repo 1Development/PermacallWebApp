@@ -32,7 +32,7 @@ namespace Tools.Services
             throw new NotImplementedException();
         }
 
-        public string AddCharacter(string name, string realm)
+        public string AddCharacter(string playerName, string name, string realm)
         {
             var result = warcraftClient.GetCharacterEquipmentSummaryAsync(realm.ToLower().Replace(" ", "-"), name.ToLower(), "profile-eu").Result;
 
@@ -40,8 +40,16 @@ namespace Tools.Services
             {
                 var character = result.Value.Character;
 
-                if (dbContext.Characters.Any(x => x.Name == character.Name && x.Realm == character.Realm.Slug && !x.Removed))
+                var existingCharacter = dbContext.Characters.FirstOrDefault(x => x.Name == character.Name && x.Realm == character.Realm.Slug && !x.Removed);
+                if (existingCharacter != null)
                 {
+                    if (!String.IsNullOrWhiteSpace(playerName) &&
+                        !String.Equals(playerName, existingCharacter.PlayerName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        existingCharacter.PlayerName = playerName;
+                        dbContext.SaveChanges();
+                        return "Character Edited";
+                    }
                     return "Character already exists";
                 }
 
@@ -92,6 +100,8 @@ namespace Tools.Services
 
                 List<ItemCache> equipedItems = equipment.Select(x => mapEquippedItems(x)).ToList();
 
+                newCache.Class = summaryResult.Value.CharacterClass.Name;
+                newCache.Race = summaryResult.Value.Race.Name;
                 newCache.Items = equipedItems;
                 newCache.AverageItemLevel = summaryResult.Value.AverageItemLevel;
                 newCache.EquippedItemLevel = summaryResult.Value.EquippedItemLevel;
@@ -103,7 +113,7 @@ namespace Tools.Services
                 dbContext.CharacterEquipmentCaches.Remove(newCache);
                 dbContext.SaveChanges();
             }
-            
+
 
             return newCache;
         }

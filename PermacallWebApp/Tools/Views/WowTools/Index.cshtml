@@ -40,25 +40,27 @@
     <br /><br />
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-    <div>
-        <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
-        <form id="addDiv" style="display: none;">
-            <h4>Character name:</h4>
-            <input name="name" />
-            <h4>Realm:</h4>
-            <input name="realm" />
-            <br />
-            <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
-            <br />
-            <p id="ErrorMessage" class="text-danger"></p>
-        </form>
-    </div>
+        <div>
+            <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
+            <form id="addDiv" style="display: none;">
+                <h4>Player name:</h4>
+                <input name="player" />
+                <h4>Character name:</h4>
+                <input name="name" />
+                <h4>Realm:</h4>
+                <input name="realm" />
+                <br />
+                <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
+                <br />
+                <p id="ErrorMessage" class="text-danger"></p>
+            </form>
+        </div>
     }
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-    <script>
-        window.CanDeleteCharacters = true;
-    </script>
+        <script>
+            window.CanDeleteCharacters = true;
+        </script>
     }
 
     @section Scripts {
@@ -121,7 +123,26 @@
 
                 allCharacters.find(char => char.id == character.character.id).averageItemLevel = character.averageItemLevel;
 
-                var innerhtml = '<td>' + character.character.name;
+                var innerhtml = '<td><a class="noLink" data-trigger="hover" data-toggle="popover" title="' + character.character.name + '" data-html="true" data-content="' +
+                    '<span style=&quot; font-size: 90%; font-weight:normal;&quot;> ' +
+                    character.race + ' ' + character.class + '<br/>' +
+                    'Realm: ' + character.character.realm + '<br/>';
+
+                if (character.character.playerName) {
+                    innerhtml = innerhtml +
+                        'Player: ' + character.character.playerName;
+                }
+
+                innerhtml = innerhtml +
+                    '</span > "';
+
+                if (window.CanDeleteCharacters) {
+                    innerhtml = innerhtml + 'onclick="FillDetails(' + character.character.id + ')"'
+                }
+
+                innerhtml = innerhtml + '>' + character.character.name + '</a>';
+
+                //var innerhtml = '<td>' + character.character.name;
                 if (window.CanDeleteCharacters) {
                     innerhtml = innerhtml + '<a class="text-danger" onclick="RemoveCharacter(' + character.character.id + ')">X</a>'
                 }
@@ -140,13 +161,15 @@
 
                 $('#wowTableCharacter_' + character.character.id).html(innerhtml);
                 sortTable($('#WowTable'), 'desc');
+
+                $('[data-toggle="popover"]').popover();
             }
             function AddCharacter() {
                 var form = {};
                 $.each($('#addDiv').serializeArray(), function (i, field) {
                     form[field.name] = field.value;
                 });
-                fetch('/tools/api/WowToolsApi/AddCharacter/' + form['realm'] + "/" + form['name'],
+                fetch('/tools/api/WowToolsApi/AddCharacter/' + form['player'] + "/" + form['realm'] + "/" + form['name'],
                     { method: 'POST' })
                     .then(function (response) {
                         return response.text()
@@ -154,16 +177,31 @@
                                 if (data != "") {
                                     console.log(data);
                                     $('#ErrorMessage').text(data);
+                                    RenderTable();
                                 }
                                 else {
                                     RenderTable();
+                                    $("input[name=player]").val('');
+                                    $("input[name=name]").val('');
+                                    $("input[name=realm]").val('');
                                 }
                             })
                     });
                 return false;
             }
 
-            function ShowAddCharacter() {
+            function ShowAddCharacter(input) {
+                if (input != undefined) {
+                    if (input) {
+                        $('#addDiv').hide();
+                        $('#ShowAddButton').text('Add new Character')
+                    }
+                    else {
+                        $('#addDiv').show();
+                        $('#ShowAddButton').text('Hide');
+                    }
+                }
+
                 if ($('#addDiv').is(":hidden")) {
                     $('#addDiv').show();
                     $('#ShowAddButton').text('Hide');
@@ -182,6 +220,13 @@
                             RenderTable();
                         });
                 }
+            }
+            function FillDetails(id) {
+                var character = allCharacters.find(char => char.id == id);
+                $("input[name=player]").val(character.playerName);
+                $("input[name=name]").val(character.name);
+                $("input[name=realm]").val(character.realm);
+                ShowAddCharacter(true);
             }
 
             function sortTable(table, order) {

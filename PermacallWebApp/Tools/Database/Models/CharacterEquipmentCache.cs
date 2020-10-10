@@ -12,6 +12,8 @@ namespace Tools.Database.Models
         public DateTime CacheTime { get; internal set; }
         public int AverageItemLevel { get; set; }
         public int EquippedItemLevel { get; set; }
+        public string Class { get; set; }
+        public string Race { get; set; }
         public List<ItemCache> Items { get; set; }
     }
 }

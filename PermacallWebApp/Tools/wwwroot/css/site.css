@@ -24,3 +24,8 @@ textarea {
     border-radius: 25px;
 }
 
+a.noLink {
+    color: #333;
+    text-decoration: none;
+    cursor: default;
+}

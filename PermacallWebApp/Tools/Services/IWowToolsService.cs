@@ -8,7 +8,7 @@ namespace Tools.Services
 {
     public interface IWowToolsService
     {
-        string AddCharacter(string name, string realm);
+        string AddCharacter(string playerName, string name, string realm);
         IList<Character> GetAllCharacters();
         CharacterEquipmentCache GetCharacterItems(int characterId);
         void RemoveCharacter(int id);
