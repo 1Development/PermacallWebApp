@@ -40,27 +40,27 @@
     <br /><br />
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-        <div>
-            <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
-            <form id="addDiv" style="display: none;">
-                <h4>Player name:</h4>
-                <input name="player" />
-                <h4>Character name:</h4>
-                <input name="name" />
-                <h4>Realm:</h4>
-                <input name="realm" />
-                <br />
-                <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
-                <br />
-                <p id="ErrorMessage" class="text-danger"></p>
-            </form>
-        </div>
+    <div>
+        <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
+        <form id="addDiv" style="display: none;">
+            <h4>Player name:</h4>
+            <input name="player" />
+            <h4>Character name:</h4>
+            <input name="name" />
+            <h4>Realm:</h4>
+            <input name="realm" />
+            <br />
+            <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
+            <br />
+            <p id="ErrorMessage" class="text-danger"></p>
+        </form>
+    </div>
     }
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-        <script>
-            window.CanDeleteCharacters = true;
-        </script>
+    <script>
+        window.CanDeleteCharacters = true;
+    </script>
     }
 
     @section Scripts {
@@ -101,14 +101,18 @@
             function displayAndProcess(data) {
                 data.forEach(character => {
                     addCharacterToTable(character);
-                    fetch('/tools/api/WowToolsApi/GetCharacterItems/' + character.id)
-                        .then(response => response.json())
-                        .then(itemData => updateCharacter(itemData))
+                    fetchAndUpdateCharacter(character.id);
                 });
             }
 
+            function fetchAndUpdateCharacter(characterId) {
+                fetch('/tools/api/WowToolsApi/GetCharacterItems/' + characterId)
+                    .then(response => response.json())
+                    .then(itemData => updateCharacter(itemData))
+            }
+
             function addCharacterToTable(character) {
-                console.log(character);
+                //console.log(character);
                 var html = '<tr id="wowTableCharacter_' + character.id + '">' +
                     '<td>' + character.name + '</td><td></td>';
                 allSlots.forEach(() => {
@@ -119,22 +123,21 @@
             }
 
             function updateCharacter(character) {
-                console.log(character);
+                //console.log(character);
 
-                allCharacters.find(char => char.id == character.character.id).averageItemLevel = character.averageItemLevel;
-
-                var innerhtml = '<td><a class="noLink" data-trigger="hover" data-toggle="popover" title="' + character.character.name + '" data-html="true" data-content="' +
-                    '<span style=&quot; font-size: 90%; font-weight:normal;&quot;> ' +
-                    character.race + ' ' + character.class + '<br/>' +
-                    'Realm: ' + character.character.realm + '<br/>';
-
-                if (character.character.playerName) {
-                    innerhtml = innerhtml +
-                        'Player: ' + character.character.playerName;
+                if (character.items == undefined || character.class == undefined) {
+                    setTimeout(() => {
+                        fetchAndUpdateCharacter(character.character.id);
+                    }, 1000);
+                    return;
                 }
 
-                innerhtml = innerhtml +
-                    '</span > "';
+                var characterInList = allCharacters.find(char => char.id == character.character.id);
+                characterInList.averageItemLevel = character.averageItemLevel;
+                characterInList.equippedItemLevel = character.equippedItemLevel;
+
+
+                var innerhtml = '<td class="Class' + character.class.replace(' ', '') + '"><a class="noLink" data-trigger="hover" data-toggle="popover" title="' + character.character.name + ' - ' + character.level + '" data-html="true" data-content="' + GeneratePopover(character) + '"';
 
                 if (window.CanDeleteCharacters) {
                     innerhtml = innerhtml + 'onclick="FillDetails(' + character.character.id + ')"'
@@ -162,8 +165,49 @@
                 $('#wowTableCharacter_' + character.character.id).html(innerhtml);
                 sortTable($('#WowTable'), 'desc');
 
-                $('[data-toggle="popover"]').popover();
+                //$('[data-toggle="popover"]').popover();
+                RestartPopover();
             }
+
+            function GeneratePopover(character) {
+                var popupContent = '<span style="font-size: 90%; font-weight:normal;"> ';
+
+                popupContent += character.race + ' ' + character.class + '<br/>';
+                popupContent += 'Realm: ' + character.character.realm + '<br/>';
+
+                if (character.character.playerName)
+                    popupContent += 'Player: ' + character.character.playerName + '<br/>';
+
+                popupContent += '<br/>Links: <br/>';
+                popupContent += '<a target="_blank" href="https://worldofwarcraft.com/en-gb/character/eu/' + character.character.realm + '/' + character.character.name + '">Armory</a> <br/>';
+
+
+                popupContent += '</span >';
+
+                return popupContent.split('"').join('&quot;');
+            }
+
+            function RestartPopover() {
+                $('[data-toggle="popover"]').popover({
+                    trigger: "manual",
+                    html: true,
+                    animation: false
+                }).on("mouseenter", function () {
+                    var _this = this;
+                    $(this).popover("show");
+                    $(".popover").on("mouseleave", function () {
+                        $(_this).popover('hide');
+                    });
+                }).on("mouseleave", function () {
+                    var _this = this;
+                    setTimeout(function () {
+                        if (!$(".popover:hover").length) {
+                            $(_this).popover("hide");
+                        }
+                    }, 100);
+                });
+            }
+
             function AddCharacter() {
                 var form = {};
                 $.each($('#addDiv').serializeArray(), function (i, field) {
@@ -174,6 +218,7 @@
                     .then(function (response) {
                         return response.text()
                             .then(data => {
+                                $('#ErrorMessage').text('');
                                 if (data != "") {
                                     console.log(data);
                                     $('#ErrorMessage').text(data);
@@ -233,8 +278,34 @@
                 var asc = order === 'asc',
                     tbody = table.find('tbody');
 
+                var findILevel = function (id) {
+                    var charId = id.split("_")[1];
+                    var character = allCharacters.find(char => char.id == charId);
+                    if (!character) {
+                        return 0;
+                    }
+                    return character.equippedItemLevel
+                }
+
                 tbody.find('tr').sort(function (a, b) {
-                    return $('td:nth-child(2)', b).text().localeCompare($('td:nth-child(2)', a).text());
+                    //console.log('comparing: ' + $(a).attr('id') + ' - ' + $(b).attr('id'));
+                    var levelA = findILevel($(a).attr('id'));
+                    if (!levelA) levelA = 0;
+                    var levelB = findILevel($(b).attr('id'));
+                    if (!levelB) levelB = 0;
+
+                    var result = 0;
+                    if (levelA > levelB) {
+                        result = -1;
+                    }
+                    else if (levelA < levelB) {
+                        result = 1;
+                    }
+
+                    if (asc) {
+                        return result * -1;
+                    }
+                    return result;
                 }).appendTo(tbody);
             }
         </script>

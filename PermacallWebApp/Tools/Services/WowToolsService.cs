@@ -55,6 +55,7 @@ namespace Tools.Services
 
                 dbContext.Characters.Add(new Character
                 {
+                    PlayerName = playerName,
                     Name = character.Name,
                     Realm = character.Realm.Slug,
                     AddedTime = DateTime.Now
@@ -75,7 +76,9 @@ namespace Tools.Services
         public CharacterEquipmentCache GetCharacterItems(int characterId)
         {
             Character character = dbContext.Characters.SingleOrDefault(x => x.Id == characterId);
+
             if (character == null) return null;
+
             var cutoffTime = DateTime.Now.AddMinutes(-characterCachetime);
             var cache = dbContext.CharacterEquipmentCaches
                 .Include(x => x.Items)
@@ -102,6 +105,7 @@ namespace Tools.Services
 
                 newCache.Class = summaryResult.Value.CharacterClass.Name;
                 newCache.Race = summaryResult.Value.Race.Name;
+                newCache.Level = summaryResult.Value.Level;
                 newCache.Items = equipedItems;
                 newCache.AverageItemLevel = summaryResult.Value.AverageItemLevel;
                 newCache.EquippedItemLevel = summaryResult.Value.EquippedItemLevel;

@@ -14,6 +14,7 @@ namespace Tools.Database.Models
         public int EquippedItemLevel { get; set; }
         public string Class { get; set; }
         public string Race { get; set; }
+        public int Level { get; internal set; }
         public List<ItemCache> Items { get; set; }
     }
 }

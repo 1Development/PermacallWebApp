@@ -1,4 +1,7 @@
-﻿.ItemQualityArtifact {
+﻿.ItemQualityHeirloom {
+    background-color: #00ccff;
+}
+.ItemQualityArtifact {
     background-color: #e6cc80;
 }
 .ItemQualityLegendary {
@@ -15,4 +18,44 @@
 }
 .ItemQualityCommon {
     background-color: #ffffff;
+}
+.ItemQualityPoor {
+    background-color: #9d9d9d;
+}
+
+.ClassDeathKnight {
+    background-color: #C41F3B;
+}
+.ClassDemonHunter {
+    background-color: #A330C9;
+}
+.ClassDruid {
+    background-color: #FF7D0A;
+}
+.ClassHunter {
+    background-color: #ABD473;
+}
+.ClassMage {
+    background-color: #69CCF0;
+}
+.ClassMonk {
+    background-color: #00FF96;
+}
+.ClassPaladin {
+    background-color: #F58CBA;
+}
+.ClassPriest {
+    background-color: #FFFFFF;
+}
+.ClassRogue {
+    background-color: #FFF569;
+}
+.ClassShaman {
+    background-color: #0070DE;
+}
+.ClassWarlock {
+    background-color: #9482C9;
+}
+.ClassWarrior {
+    background-color: #C79C6E;
 }
