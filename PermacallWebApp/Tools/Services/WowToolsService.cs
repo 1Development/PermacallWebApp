@@ -1,10 +1,12 @@
 ﻿using ArgentPonyWarcraftClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Logging;
 using PCDataDLL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Tools.Database;
 using Tools.Database.Models;
@@ -16,10 +18,18 @@ namespace Tools.Services
         private const int characterCachetime = 10;
         private WarcraftClient warcraftClient;
         private ToolContext dbContext;
+        private static Semaphore wowApiPool;
+        private readonly ILogger<WowToolsService> logger;
 
-        public WowToolsService(ToolContext dbContext)
+        public WowToolsService(ToolContext dbContext, ILogger<WowToolsService> logger)
         {
+            if (wowApiPool == null)
+            {
+                wowApiPool = new Semaphore(1, 1);
+            }
+
             this.dbContext = dbContext;
+            this.logger = logger;
 
             var clientId = SecureData.BlizzardApiClientId;
             var clientSecret = SecureData.BlizzardApiClientSecret;
@@ -73,34 +83,90 @@ namespace Tools.Services
             return dbContext.Characters.Where(x => !x.Removed).ToList();
         }
 
-        public CharacterEquipmentCache GetCharacterItems(int characterId)
+        public CharacterEquipmentCache GetCharacterItems(int characterId, bool updateCache)
         {
             Character character = dbContext.Characters.SingleOrDefault(x => x.Id == characterId);
 
             if (character == null) return null;
 
             var cutoffTime = DateTime.Now.AddMinutes(-characterCachetime);
+
+            if (!updateCache)
+            {
+                var oldCache = dbContext.CharacterEquipmentCaches
+                    .Include(x => x.Items)
+                    .OrderByDescending(x => x.CacheTime)
+                    .Where(x => x.Character == character && x.Class != null)
+                    .FirstOrDefault();
+                if (oldCache != null)
+                {
+                    oldCache.OldCache = oldCache.CacheTime < cutoffTime;
+                    return oldCache;
+                }
+            }
+
             var cache = dbContext.CharacterEquipmentCaches
                 .Include(x => x.Items)
                 .Where(x => x.Character == character && x.CacheTime > cutoffTime)
                 .FirstOrDefault();
+
             if (cache != null)
-                return cache;
+            {
+                if (cache.Class == null && cache.CacheTime < DateTime.Now.AddSeconds(-20))
+                {
+                    dbContext.CharacterEquipmentCaches.Remove(cache);
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    return cache;
+                }
+            }
 
             var newCache = new CharacterEquipmentCache
             {
                 CacheTime = DateTime.Now,
                 Character = character
             };
-            dbContext.CharacterEquipmentCaches.Add(newCache);
-            dbContext.SaveChanges();
+
+            RequestResult<CharacterEquipmentSummary> result = null;
+            RequestResult<CharacterProfileSummary> summaryResult = null;
 
             try
             {
-                var result = warcraftClient.GetCharacterEquipmentSummaryAsync(character.Realm, character.Name.ToLower(), "profile-eu").Result;
-                var summaryResult = warcraftClient.GetCharacterProfileSummaryAsync(character.Realm, character.Name.ToLower(), "profile-eu").Result;
-                var equipment = result.Value.EquippedItems;
+                if (wowApiPool.WaitOne(1000))
+                {
+                    try
+                    {
+                        dbContext.CharacterEquipmentCaches.Add(newCache);
+                        dbContext.SaveChanges();
+                        
+                        result = warcraftClient.GetCharacterEquipmentSummaryAsync(character.Realm, character.Name.ToLower(), "profile-eu").Result;
+                        summaryResult = warcraftClient.GetCharacterProfileSummaryAsync(character.Realm, character.Name.ToLower(), "profile-eu").Result;
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e, e.Message);
+                    }
+                    finally
+                    {
+                        wowApiPool.Release();
+                    }
+                }
+                else
+                {
+                    newCache.OldCache = true;
+                    return newCache;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+            }
 
+            try
+            {
+                var equipment = result.Value.EquippedItems;
                 List<ItemCache> equipedItems = equipment.Select(x => mapEquippedItems(x)).ToList();
 
                 newCache.Class = summaryResult.Value.CharacterClass.Name;
@@ -116,8 +182,8 @@ namespace Tools.Services
             {
                 dbContext.CharacterEquipmentCaches.Remove(newCache);
                 dbContext.SaveChanges();
+                logger.LogError(e, e.Message);
             }
-
 
             return newCache;
         }
@@ -139,7 +205,7 @@ namespace Tools.Services
 
             foreach (var character in characters)
             {
-                characterItems.Add(GetCharacterItems(character.Id));
+                characterItems.Add(GetCharacterItems(character.Id, true));
             }
 
             return characterItems;

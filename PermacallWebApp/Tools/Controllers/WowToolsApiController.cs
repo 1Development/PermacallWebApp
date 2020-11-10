@@ -53,7 +53,13 @@ namespace Tools.Controllers
         [HttpGet("GetCharacterItems/{characterId}")]
         public IActionResult GetCharacterItems(int characterId)
         {
-            return Ok(_wowToolsService.GetCharacterItems(characterId));
+            return Ok(_wowToolsService.GetCharacterItems(characterId, false));
+        }
+
+        [HttpGet("GetNewCharacterItems/{characterId}")]
+        public IActionResult GetNewCharacterItems(int characterId)
+        {
+            return Ok(_wowToolsService.GetCharacterItems(characterId, true));
         }
 
         //// GET: api/WowToolsApi

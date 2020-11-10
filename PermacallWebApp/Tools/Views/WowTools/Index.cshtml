@@ -10,6 +10,7 @@
 
 <div class="contentBox col-lg-12 col-md-12" style="overflow-x:auto; font-weight: bold;">
 
+    <p class="text-right" id="cacheStatus"> </p>
     <table id="WowTable" class="table table-bordered" style="max-width: 100%">
         <thead>
             <tr style="background-color: rgba(255, 255, 255, 0.2);">
@@ -87,6 +88,7 @@
             var allCharacters;
 
             function RenderTable() {
+                UpdateTime(true);
                 fetch('/tools/api/WowToolsApi/GetAllCharacters')
                     .then(response => response.json())
                     .then(data => {
@@ -111,6 +113,12 @@
                     .then(itemData => updateCharacter(itemData))
             }
 
+            function fetchAndUpdateNewCache(characterId) {
+                fetch('/tools/api/WowToolsApi/GetNewCharacterItems/' + characterId)
+                    .then(response => response.json())
+                    .then(itemData => updateCharacter(itemData));
+            }
+
             function addCharacterToTable(character) {
                 //console.log(character);
                 var html = '<tr id="wowTableCharacter_' + character.id + '">' +
@@ -124,18 +132,27 @@
 
             function updateCharacter(character) {
                 //console.log(character);
+                var characterIsUpdated = false;
+                
+
+                if (character.oldCache) {
+                    setTimeout(() => {
+                        fetchAndUpdateNewCache(character.character.id);
+                    }, 1000);
+                }
 
                 if (character.items == undefined || character.class == undefined) {
                     setTimeout(() => {
                         fetchAndUpdateCharacter(character.character.id);
-                    }, 1000);
+                    }, 5000);
                     return;
                 }
 
                 var characterInList = allCharacters.find(char => char.id == character.character.id);
                 characterInList.averageItemLevel = character.averageItemLevel;
                 characterInList.equippedItemLevel = character.equippedItemLevel;
-
+                characterInList.cacheTime = character.cacheTime;
+                characterInList.oldCache = character.oldCache;
 
                 var innerhtml = '<td class="Class' + character.class.replace(' ', '') + '"><a class="noLink" data-trigger="hover" data-toggle="popover" title="' + character.character.name + ' - ' + character.level + '" data-html="true" data-content="' + GeneratePopover(character) + '"';
 
@@ -155,6 +172,10 @@
                 allSlots.forEach(slotName => {
                     var item = character.items.find(item => item.slot == slotName);
                     if (item) {
+                        if (characterInList && characterInList.items && characterInList.items.find(old => old.slot == slotName) && characterInList.items.find(old => old.slot == slotName).level != item.level) {
+                            characterIsUpdated = true;
+                        }
+
                         innerhtml = innerhtml + '<td class="ItemQuality' + item.quality + '">' + item.level + '</td>';
                     }
                     else {
@@ -163,9 +184,15 @@
                 });
 
                 $('#wowTableCharacter_' + character.character.id).html(innerhtml);
-                sortTable($('#WowTable'), 'desc');
+                if (characterIsUpdated) {
+                    $("#wowTableCharacter_" + character.character.id + " td").effect("highlight", {}, 1500);
+                }
+                characterInList.items = character.items;
 
-                //$('[data-toggle="popover"]').popover();
+                RenderUpdate();
+            }
+            function RenderUpdate() {
+                queueAfterRender();
                 RestartPopover();
             }
 
@@ -179,7 +206,7 @@
                     popupContent += 'Player: ' + character.character.playerName + '<br/>';
 
                 popupContent += '<br/>Links: <br/>';
-                popupContent += '<a target="_blank" href="https://worldofwarcraft.com/en-gb/character/eu/' + character.character.realm + '/' + character.character.name + '">Armory</a> <br/>';
+                popupContent += '<a target="_blank" href="https://worldofwarcraft.com/en-gb/character/eu/' + character.character.realm + '/' + character.character.name.toLowerCase() + '">Armory</a> <br/>';
 
 
                 popupContent += '</span >';
@@ -274,7 +301,38 @@
                 ShowAddCharacter(true);
             }
 
-            function sortTable(table, order) {
+            var sortingTimeout;
+
+            function queueAfterRender() {
+                clearTimeout(sortingTimeout);
+
+                sortingTimeout = setTimeout(function () {
+                    SortTable($('#WowTable'), 'desc');
+                    UpdateTime();
+                }, 200);
+            }
+
+            function UpdateTime(startedLoading) {
+                if (startedLoading || allCharacters.some((c) => {
+                    return c.oldCache
+                })) {
+                    $('#cacheStatus').text('Loading data...');
+                }
+                else {
+                    var latestUpdate = allCharacters.sort((a, b) => {
+                        if (a.cacheTime > b.cacheTime) {
+                            return -1;
+                        }
+                        else if (a.cacheTime < b.cacheTime) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+                    $('#cacheStatus').text('Updated at: ' + latestUpdate[0].cacheTime.replace('T', ' ').split('.')[0]);
+                }
+            }
+
+            function SortTable(table, order) {
                 var asc = order === 'asc',
                     tbody = table.find('tbody');
 

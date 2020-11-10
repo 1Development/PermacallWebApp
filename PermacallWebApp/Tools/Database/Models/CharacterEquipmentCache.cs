@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,5 +17,8 @@ namespace Tools.Database.Models
         public string Race { get; set; }
         public int Level { get; internal set; }
         public List<ItemCache> Items { get; set; }
+
+        [NotMapped]
+        public bool OldCache { get; internal set; }
     }
 }

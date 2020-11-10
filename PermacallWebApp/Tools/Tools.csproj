@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -28,6 +28,10 @@
   <ItemGroup>
     <ProjectReference Include="..\PCAuthLibCore\PCAuthLibCore.csproj" />
     <ProjectReference Include="..\PCDataDLL\PCDataDLL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\jquery-color\" />
   </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@ namespace Tools.Services
     {
         string AddCharacter(string playerName, string name, string realm);
         IList<Character> GetAllCharacters();
-        CharacterEquipmentCache GetCharacterItems(int characterId);
+        CharacterEquipmentCache GetCharacterItems(int characterId, bool newCache);
         void RemoveCharacter(int id);
     }
 }
