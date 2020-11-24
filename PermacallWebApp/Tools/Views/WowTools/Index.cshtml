@@ -5,12 +5,24 @@
 }
 <head>
     <link rel="stylesheet" href="~/css/WowTools.css" />
+    <script>const whTooltips = { colorLinks: false, iconizeLinks: false, renameLinks: false };</script>
+    <script src="https://wow.zamimg.com/widgets/power.js"></script>
 </head>
 
 
 <div class="contentBox col-lg-12 col-md-12" style="overflow-x:auto; font-weight: bold;">
 
     <p class="text-right" id="cacheStatus"> </p>
+    <div>
+        <span class="filter">
+            <input id="onlyMaxLevel" name="onlyMaxLevel" type="checkbox" onchange="RenderTable(allCharacters)" checked>
+            <label for="onlyMaxLevel">Max Level</label>
+        </span>
+        <span class="filter">
+            <input id="mainsOnly" name="mainsOnly" type="checkbox" onchange="RenderTable(allCharacters)">
+            <label for="mainsOnly">Mains Only</label>
+        </span>
+    </div>
     <table id="WowTable" class="table table-bordered" style="max-width: 100%">
         <thead>
             <tr style="background-color: rgba(255, 255, 255, 0.2);">
@@ -41,32 +53,34 @@
     <br /><br />
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-    <div>
-        <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
-        <form id="addDiv" style="display: none;">
-            <h4>Player name:</h4>
-            <input name="player" />
-            <h4>Character name:</h4>
-            <input name="name" />
-            <h4>Realm:</h4>
-            <input name="realm" />
-            <br />
-            <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
-            <br />
-            <p id="ErrorMessage" class="text-danger"></p>
-        </form>
-    </div>
+        <div>
+            <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
+            <form id="addDiv" style="display: none;">
+                <h4>Player name:</h4>
+                <input name="player" />
+                <h4>Character name:</h4>
+                <input name="name" />
+                <h4>Realm:</h4>
+                <input name="realm" />
+                <br />
+                <h4>Main? <input type="checkbox" name="isMain" /></h4>
+                <br />
+                <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
+                <br />
+                <p id="ErrorMessage" class="text-danger"></p>
+            </form>
+        </div>
     }
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-    <script>
-        window.CanDeleteCharacters = true;
-    </script>
+        <script>
+            window.CanDeleteCharacters = true;
+        </script>
     }
 
     @section Scripts {
         <script type="text/javascript">
-
+            var newRender = true;
             var allSlots = [
                 'Main Hand',
                 'Off Hand',
@@ -85,26 +99,41 @@
                 'Trinket 1',
                 'Trinket 2'
             ];
-            var allCharacters;
+            var allCharacters = [];
 
-            function RenderTable() {
+            function FetchTable() {
                 UpdateTime(true);
                 fetch('/tools/api/WowToolsApi/GetAllCharacters')
                     .then(response => response.json())
                     .then(data => {
-                        $("#WowTable tbody").empty();
+                        //data.forEach(character => {
+                        //    if (!allCharacters.find(char => char.id == character.id)) {
+                        //        allCharacters.push(character);
+                        //    }
+                        //})
                         allCharacters = data;
-                        displayAndProcess(data);
+                        RenderTable(allCharacters);
                     });
             }
+            FetchTable();
 
-            RenderTable();
+            function RenderTable(data) {
+                if ($('#WowTable tr').length <= 1) {
+                    $("#WowTable tbody").empty();
+                }
 
-            function displayAndProcess(data) {
                 data.forEach(character => {
-                    addCharacterToTable(character);
-                    fetchAndUpdateCharacter(character.id);
+                    //if (newRender) {
+                    //    addCharacterToTable(character);
+                    //}
+                    if (!character.class) {
+                        fetchAndUpdateCharacter(character.id);
+                    }
+                    else {
+                        updateCharacter(character);
+                    }
                 });
+                newRender = false;
             }
 
             function fetchAndUpdateCharacter(characterId) {
@@ -131,40 +160,46 @@
             }
 
             function updateCharacter(character) {
+                if (character.character) {
+                    Object.assign(character, character.character);
+                    delete character.character;
+                }
                 //console.log(character);
                 var characterIsUpdated = false;
-                
+
 
                 if (character.oldCache) {
                     setTimeout(() => {
-                        fetchAndUpdateNewCache(character.character.id);
+                        fetchAndUpdateNewCache(character.id);
                     }, 1000);
                 }
 
                 if (character.items == undefined || character.class == undefined) {
                     setTimeout(() => {
-                        fetchAndUpdateCharacter(character.character.id);
+                        fetchAndUpdateCharacter(character.id);
                     }, 5000);
                     return;
                 }
 
-                var characterInList = allCharacters.find(char => char.id == character.character.id);
-                characterInList.averageItemLevel = character.averageItemLevel;
-                characterInList.equippedItemLevel = character.equippedItemLevel;
-                characterInList.cacheTime = character.cacheTime;
-                characterInList.oldCache = character.oldCache;
+                var characterInList = allCharacters.find(char => char.id == character.id);
 
-                var innerhtml = '<td class="Class' + character.class.replace(' ', '') + '"><a class="noLink" data-trigger="hover" data-toggle="popover" title="' + character.character.name + ' - ' + character.level + '" data-html="true" data-content="' + GeneratePopover(character) + '"';
+                Object.assign(characterInList, character);
+                //characterInList.averageItemLevel = character.averageItemLevel;
+                //characterInList.equippedItemLevel = character.equippedItemLevel;
+                //characterInList.cacheTime = character.cacheTime;
+                //characterInList.oldCache = character.oldCache;
+
+                var innerhtml = '<td class="Class' + character.class.replace(' ', '') + '"><a class="noLink" data-trigger="hover" data-toggle="popover" title="' + character.name + ' - ' + character.level + '" data-html="true" data-content="' + GeneratePopover(character) + '"';
 
                 if (window.CanDeleteCharacters) {
-                    innerhtml = innerhtml + 'onclick="FillDetails(' + character.character.id + ')"'
+                    innerhtml = innerhtml + 'onclick="FillDetails(' + character.id + ')"'
                 }
 
-                innerhtml = innerhtml + '>' + character.character.name + '</a>';
+                innerhtml = innerhtml + '>' + character.name + '</a>';
 
-                //var innerhtml = '<td>' + character.character.name;
+                //var innerhtml = '<td>' + character.name;
                 if (window.CanDeleteCharacters) {
-                    innerhtml = innerhtml + '<a class="text-danger" onclick="RemoveCharacter(' + character.character.id + ')">X</a>'
+                    innerhtml = innerhtml + '<a class="text-danger" onclick="RemoveCharacter(' + character.id + ')">X</a>'
                 }
                 innerhtml = innerhtml + '</td>' +
                     '<td>' + character.equippedItemLevel + '/' + character.averageItemLevel + '</td>';
@@ -175,19 +210,39 @@
                         if (characterInList && characterInList.items && characterInList.items.find(old => old.slot == slotName) && characterInList.items.find(old => old.slot == slotName).level != item.level) {
                             characterIsUpdated = true;
                         }
-
-                        innerhtml = innerhtml + '<td class="ItemQuality' + item.quality + '">' + item.level + '</td>';
+                        var itemLink = 'item=' + item.itemId + '&ilvl=' + item.level + '&lvl=' + character.level;
+                        if (item.bonus) {
+                            itemLink = itemLink + '&bonus=' + item.bonus;
+                        }
+                        if (item.gems) {
+                            itemLink = itemLink + '&gems=' + item.gems;
+                        }
+                        if (item.enchants) {
+                            itemLink = itemLink + '&ench=' + item.enchants;
+                        }
+                        innerhtml = innerhtml + '<td class="ItemQuality' + item.quality + '"><a class="noLink" href="https://wowhead.com/' + itemLink + '" data-wowhead="' + itemLink + '"> ' + item.level + '</a></td>';
                     }
                     else {
                         innerhtml = innerhtml + '<td></td>';
                     }
                 });
 
-                $('#wowTableCharacter_' + character.character.id).html(innerhtml);
-                if (characterIsUpdated) {
-                    $("#wowTableCharacter_" + character.character.id + " td").effect("highlight", {}, 1500);
-                }
+
                 characterInList.items = character.items;
+
+                if (shouldFilterCharacter(character)) {
+                    $('#wowTableCharacter_' + character.id).remove();
+                }
+                else {
+                    if ($('#wowTableCharacter_' + character.id).length <= 0) {
+                        addCharacterToTable(character);
+                    }
+
+                    $('#wowTableCharacter_' + character.id).html(innerhtml);
+                    if (characterIsUpdated) {
+                        $("#wowTableCharacter_" + character.id + " td").effect("highlight", {}, 1500);
+                    }
+                }
 
                 RenderUpdate();
             }
@@ -196,17 +251,32 @@
                 RestartPopover();
             }
 
+            function shouldFilterCharacter(character) {
+                if ($('#mainsOnly').prop('checked')) {
+                    if (!character.isMain) {
+                        return true;
+                    }
+                }
+                if ($('#onlyMaxLevel').prop('checked')) {
+                    if (character.level < 60) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             function GeneratePopover(character) {
                 var popupContent = '<span style="font-size: 90%; font-weight:normal;"> ';
 
                 popupContent += character.race + ' ' + character.class + '<br/>';
-                popupContent += 'Realm: ' + character.character.realm + '<br/>';
+                popupContent += 'Realm: ' + character.realm + '<br/>';
 
-                if (character.character.playerName)
-                    popupContent += 'Player: ' + character.character.playerName + '<br/>';
+                if (character.playerName)
+                    popupContent += 'Player: ' + character.playerName + '<br/>';
 
                 popupContent += '<br/>Links: <br/>';
-                popupContent += '<a target="_blank" href="https://worldofwarcraft.com/en-gb/character/eu/' + character.character.realm + '/' + character.character.name.toLowerCase() + '">Armory</a> <br/>';
+                popupContent += '<a target="_blank" href="https://worldofwarcraft.com/en-gb/character/eu/' + character.realm + '/' + character.name.toLowerCase() + '">Armory</a> <br/>';
 
 
                 popupContent += '</span >';
@@ -238,10 +308,20 @@
             function AddCharacter() {
                 var form = {};
                 $.each($('#addDiv').serializeArray(), function (i, field) {
-                    form[field.name] = field.value;
+                    if (field.value == 'on' || field.value == 'off') {
+                        form[field.name] = field.value == 'on';
+                    }
+                    else {
+                        form[field.name] = field.value;
+                    }
+
                 });
-                fetch('/tools/api/WowToolsApi/AddCharacter/' + form['player'] + "/" + form['realm'] + "/" + form['name'],
-                    { method: 'POST' })
+                fetch('/tools/api/WowToolsApi/AddCharacter/',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(form)
+                    })
                     .then(function (response) {
                         return response.text()
                             .then(data => {
@@ -249,10 +329,10 @@
                                 if (data != "") {
                                     console.log(data);
                                     $('#ErrorMessage').text(data);
-                                    RenderTable();
+                                    FetchTable();
                                 }
                                 else {
-                                    RenderTable();
+                                    FetchTable();
                                     $("input[name=player]").val('');
                                     $("input[name=name]").val('');
                                     $("input[name=realm]").val('');
@@ -289,15 +369,18 @@
                     fetch('/tools/api/WowToolsApi/RemoveCharacter/' + id,
                         { method: 'POST' })
                         .then(function (response) {
-                            RenderTable();
+                            $("#WowTable tbody").empty();
+                            FetchTable();
                         });
                 }
             }
+
             function FillDetails(id) {
                 var character = allCharacters.find(char => char.id == id);
                 $("input[name=player]").val(character.playerName);
                 $("input[name=name]").val(character.name);
                 $("input[name=realm]").val(character.realm);
+                $("input[name=isMain]").prop('checked', character.isMain);
                 ShowAddCharacter(true);
             }
 
@@ -319,16 +402,12 @@
                     $('#cacheStatus').text('Loading data...');
                 }
                 else {
-                    var latestUpdate = allCharacters.sort((a, b) => {
-                        if (a.cacheTime > b.cacheTime) {
-                            return -1;
-                        }
-                        else if (a.cacheTime < b.cacheTime) {
-                            return 1;
-                        }
-                        return 0;
-                    });
-                    $('#cacheStatus').text('Updated at: ' + latestUpdate[0].cacheTime.replace('T', ' ').split('.')[0]);
+                    var latestUpdate =
+                        allCharacters.reduce((max, char) => max.cacheTime > char.cacheTime ? max : char);
+
+                    var refreshButton = '<button class="btn btn-primary btn-xs" onclick="FetchTable()"><span class="glyphicon glyphicon-refresh"></span></button>';
+                    if (latestUpdate.cacheTime)
+                        $('#cacheStatus').html('Updated at: ' + latestUpdate.cacheTime.replace('T', ' ').split('.')[0] + ' ' + refreshButton);
                 }
             }
 
@@ -344,6 +423,8 @@
                     }
                     return character.equippedItemLevel
                 }
+
+                SortAllCharacters(asc);
 
                 tbody.find('tr').sort(function (a, b) {
                     //console.log('comparing: ' + $(a).attr('id') + ' - ' + $(b).attr('id'));
@@ -365,6 +446,23 @@
                     }
                     return result;
                 }).appendTo(tbody);
+            }
+
+            function SortAllCharacters(asc) {
+                return allCharacters.sort(function (a, b) {
+                    var result = 0;
+                    if (a.equippedItemLevel > b.equippedItemLevel) {
+                        result = -1;
+                    }
+                    else if (a.equippedItemLevel < b.equippedItemLevel) {
+                        result = 1;
+                    }
+
+                    if (asc) {
+                        return result * -1;
+                    }
+                    return result;
+                });
             }
         </script>
     }

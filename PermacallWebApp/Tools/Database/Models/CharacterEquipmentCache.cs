@@ -20,5 +20,25 @@ namespace Tools.Database.Models
 
         [NotMapped]
         public bool OldCache { get; internal set; }
+
+        public override bool Equals(object obj)
+        {
+            if(obj is CharacterEquipmentCache)
+            {
+                var cache = (CharacterEquipmentCache)obj;
+                return AverageItemLevel == cache.AverageItemLevel &&
+                   EquippedItemLevel == cache.EquippedItemLevel &&
+                   Class == cache.Class &&
+                   Race == cache.Race &&
+                   Level == cache.Level &&
+                   Items.All(x => x.Equals(cache.Items.Single(y => y.Slot == x.Slot)));
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(AverageItemLevel, EquippedItemLevel, Class, Race, Level, Items);
+        }
     }
 }

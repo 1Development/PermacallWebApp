@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PCAuthLibCore;
 using Tools.Database.Models;
+using Tools.Models;
 using Tools.Services;
 
 namespace Tools.Controllers
@@ -28,15 +29,15 @@ namespace Tools.Controllers
             return Ok(_wowToolsService.GetAllCharacters());
         }
 
-        [HttpPost("AddCharacter/{playerName}/{realmslug}/{characterName}")]
-        public IActionResult AddCharacter(string playerName, string realmslug, string characterName)
+        [HttpPost("AddCharacter")]
+        public IActionResult AddCharacter(AddCharacterModel addCharacterModel)
         {
             if (Login.GetCurrentUser(HttpContext).Permission < PCAuthLibCore.User.PermissionGroup.OPERATOR)
             {
                 return Unauthorized();
             }
 
-            return Ok(_wowToolsService.AddCharacter(playerName, characterName, realmslug));
+            return Ok(_wowToolsService.AddCharacter(addCharacterModel));
         }
 
         [HttpPost("RemoveCharacter/{id}")]

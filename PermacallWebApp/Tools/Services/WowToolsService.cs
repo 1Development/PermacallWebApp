@@ -10,12 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tools.Database;
 using Tools.Database.Models;
+using Tools.Models;
 
 namespace Tools.Services
 {
     public class WowToolsService : IWowToolsService
     {
-        private const int characterCachetime = 10;
+        private const int characterCachetime = 5;
         private WarcraftClient warcraftClient;
         private ToolContext dbContext;
         private static Semaphore wowApiPool;
@@ -42,9 +43,9 @@ namespace Tools.Services
             throw new NotImplementedException();
         }
 
-        public string AddCharacter(string playerName, string name, string realm)
+        public string AddCharacter(AddCharacterModel addCharacter)
         {
-            var result = warcraftClient.GetCharacterEquipmentSummaryAsync(realm.ToLower().Replace(" ", "-"), name.ToLower(), "profile-eu").Result;
+            var result = warcraftClient.GetCharacterEquipmentSummaryAsync(addCharacter.Realm.ToLower().Replace(" ", "-"), addCharacter.Name.ToLower(), "profile-eu").Result;
 
             if (result.Success)
             {
@@ -53,10 +54,13 @@ namespace Tools.Services
                 var existingCharacter = dbContext.Characters.FirstOrDefault(x => x.Name == character.Name && x.Realm == character.Realm.Slug && !x.Removed);
                 if (existingCharacter != null)
                 {
-                    if (!String.IsNullOrWhiteSpace(playerName) &&
-                        !String.Equals(playerName, existingCharacter.PlayerName, StringComparison.InvariantCultureIgnoreCase))
+                    if (!String.IsNullOrWhiteSpace(addCharacter.Player) &&
+                        (existingCharacter.IsMain != addCharacter.IsMain ||
+                        !String.Equals(addCharacter.Player, existingCharacter.PlayerName, StringComparison.InvariantCultureIgnoreCase
+                        )))
                     {
-                        existingCharacter.PlayerName = playerName;
+                        existingCharacter.PlayerName = addCharacter.Player;
+                        existingCharacter.IsMain = addCharacter.IsMain;
                         dbContext.SaveChanges();
                         return "Character Edited";
                     }
@@ -65,9 +69,10 @@ namespace Tools.Services
 
                 dbContext.Characters.Add(new Character
                 {
-                    PlayerName = playerName,
+                    PlayerName = addCharacter.Player,
                     Name = character.Name,
                     Realm = character.Realm.Slug,
+                    IsMain = addCharacter.IsMain,
                     AddedTime = DateTime.Now
                 });
                 dbContext.SaveChanges();
@@ -85,19 +90,21 @@ namespace Tools.Services
 
         public CharacterEquipmentCache GetCharacterItems(int characterId, bool updateCache)
         {
+            String.Join(":", null ?? new int[0]);
             Character character = dbContext.Characters.SingleOrDefault(x => x.Id == characterId);
 
             if (character == null) return null;
 
             var cutoffTime = DateTime.Now.AddMinutes(-characterCachetime);
 
-            if (!updateCache)
-            {
-                var oldCache = dbContext.CharacterEquipmentCaches
+            var oldCache = dbContext.CharacterEquipmentCaches
                     .Include(x => x.Items)
                     .OrderByDescending(x => x.CacheTime)
                     .Where(x => x.Character == character && x.Class != null)
                     .FirstOrDefault();
+
+            if (!updateCache)
+            {
                 if (oldCache != null)
                 {
                     oldCache.OldCache = oldCache.CacheTime < cutoffTime;
@@ -105,21 +112,21 @@ namespace Tools.Services
                 }
             }
 
-            var cache = dbContext.CharacterEquipmentCaches
-                .Include(x => x.Items)
-                .Where(x => x.Character == character && x.CacheTime > cutoffTime)
-                .FirstOrDefault();
+            //var cache = dbContext.CharacterEquipmentCaches
+            //    .Include(x => x.Items)
+            //    .Where(x => x.Character == character && x.CacheTime > cutoffTime)
+            //    .FirstOrDefault();
 
-            if (cache != null)
+            if (oldCache != null && oldCache.CacheTime > cutoffTime)
             {
-                if (cache.Class == null && cache.CacheTime < DateTime.Now.AddSeconds(-20))
+                if (oldCache.Class == null && oldCache.CacheTime < DateTime.Now.AddSeconds(-20))
                 {
-                    dbContext.CharacterEquipmentCaches.Remove(cache);
+                    dbContext.CharacterEquipmentCaches.Remove(oldCache);
                     dbContext.SaveChanges();
                 }
                 else
                 {
-                    return cache;
+                    return oldCache;
                 }
             }
 
@@ -140,7 +147,7 @@ namespace Tools.Services
                     {
                         dbContext.CharacterEquipmentCaches.Add(newCache);
                         dbContext.SaveChanges();
-                        
+
                         result = warcraftClient.GetCharacterEquipmentSummaryAsync(character.Realm, character.Name.ToLower(), "profile-eu").Result;
                         summaryResult = warcraftClient.GetCharacterProfileSummaryAsync(character.Realm, character.Name.ToLower(), "profile-eu").Result;
                     }
@@ -176,7 +183,16 @@ namespace Tools.Services
                 newCache.AverageItemLevel = summaryResult.Value.AverageItemLevel;
                 newCache.EquippedItemLevel = summaryResult.Value.EquippedItemLevel;
 
-                dbContext.SaveChanges();
+                if (newCache.Equals(oldCache))
+                {
+                    dbContext.CharacterEquipmentCaches.Remove(newCache);
+                    oldCache.CacheTime = DateTime.Now;
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    dbContext.SaveChanges();
+                }
             }
             catch (Exception e)
             {
@@ -185,16 +201,30 @@ namespace Tools.Services
                 logger.LogError(e, e.Message);
             }
 
+
             return newCache;
         }
 
         private ItemCache mapEquippedItems(EquippedItem item)
         {
+            var gems = item.Sockets?
+                .Where(x => x.Item != null)
+                .Select(x => x.Item.Id)
+                .ToArray();
+            var enchants = item.Spells?
+                .Where(x => x.Spell != null)
+                .Select(x => x.Spell.Id)
+                .ToArray();
+
             return new ItemCache
             {
                 Slot = item.Slot.Name,
                 Quality = item.Quality.Name,
-                Level = item.Level.Value.ToInt()
+                Level = item.Level.Value.ToInt(),
+                ItemId = item.Item.Id,
+                Bonus = String.Join(":", item.BonusList ?? new int[0]),
+                Gems = String.Join(":", gems ?? new int[0]),
+                Enchants = String.Join(":", enchants ?? new int[0])
             };
         }
 
