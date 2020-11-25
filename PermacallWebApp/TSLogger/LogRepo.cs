@@ -69,7 +69,7 @@ namespace TSLogger
 
                 List<string> queries = new List<string>();
                 List<Dictionary<string, object>> parameterList = new List<Dictionary<string, object>>();
-                
+
                 foreach (var client in clientList)
                 {
                     queries.Add("INSERT INTO tslog_loggeduser(TSChannelID, TSUserID) VALUES(?, ?)");
@@ -108,7 +108,7 @@ namespace TSLogger
                     parameterList.Add(parameters);
                 }
 
-                
+
                 var result = DB.MainDB.InsertMultiQuery(queries, parameterList);
 
 
@@ -146,26 +146,25 @@ namespace TSLogger
                     queryRunner.SelectVirtualServerById(1);
                     queryRunner.UpdateCurrentQueryClient(new ClientModification { Nickname = "PermacallWebApp" });
 
+                    channelList = queryRunner.GetChannelList(true);
+
+                    uint? currentOrder = 0; //popularityRanks[0].Id;
+                    foreach (var chnl in popularityRanks)
                     {
-
-                        channelList = queryRunner.GetChannelList(true);
-
-                        uint? currentOrder = 0; //popularityRanks[0].Id;
-                        foreach (var chnl in popularityRanks)
+                        if (channelList.Values.Exists(x => x.Name == chnl.Name))
                         {
-                            if (channelList.Values.Exists(x => x.Name == chnl.Name))
-                            {
-                                queryRunner.EditChannel(chnl.Id, new ChannelModification() { ChannelOrder = currentOrder, Description = "Channel Popularity Score: " + Math.Round(chnl.Score) });
-                                currentOrder = chnl.Id;
-                            }
+                            queryRunner.EditChannel(chnl.Id, new ChannelModification() { ChannelOrder = currentOrder, Description = "Channel Popularity Score: " + Math.Round(chnl.Score) });
+                            currentOrder = chnl.Id;
                         }
-                        queryRunner.EditChannel(8, new ChannelModification() { ChannelOrder = currentOrder }); // SET RANDOMGAME LAST
                     }
+                    queryRunner.EditChannel(8, new ChannelModification() { ChannelOrder = currentOrder }); // SET RANDOMGAME LAST
+
                     queryRunner.Logout();
                 }
             }
-            catch (SocketException)
+            catch (SocketException e)
             {
+                Console.WriteLine(e);
             }
         }
 
@@ -188,46 +187,19 @@ namespace TSLogger
             List<ChannelScore> rankResults = new List<ChannelScore>();
             Dictionary<uint, ChannelScore> scores = new Dictionary<uint, ChannelScore>();
 
-            string sql1 =
-                "select channel.channelID, channel.channelName, COUNT(channel.channelName) / 7 * 100 as 'score' FROM tslog_tsuser tsuser INNER JOIN tslog_loggeduser log ON log.TSUserID = tsuser.TSUserID AND tsuser.TSUserID NOT IN (1, 10) AND log.Timestamp > DATE_SUB(CURDATE(), INTERVAL 7 DAY) RIGHT OUTER JOIN tslog_channel channel ON log.TSChannelID = channel.channelID WHERE (channel.parentChannelID = 2 and channel.doesExist = 1) or channel.parentChannelID in (select tc.channelId from tslog_channel tc where tc.parentChannelID = 2) GROUP BY channel.channelName having COUNT(channel.channelName) > 2 ORDER BY COUNT(channel.channelName) desc";
-            string sql2 =
-                "select channel.channelID, channel.channelName, COUNT(channel.channelName)/300 * 100 as 'score' FROM tslog_tsuser tsuser INNER JOIN tslog_loggeduser log ON log.TSUserID = tsuser.TSUserID AND tsuser.TSUserID NOT IN (1, 10) AND log.Timestamp > DATE_SUB(CURDATE(), INTERVAL 30 DAY) RIGHT OUTER JOIN tslog_channel channel ON log.TSChannelID = channel.channelID WHERE (channel.parentChannelID = 2 and channel.doesExist = 1) or channel.parentChannelID in (select tc.channelId from tslog_channel tc where tc.parentChannelID = 2) GROUP BY channel.channelName having COUNT(channel.channelName) > 2 ORDER BY COUNT(channel.channelName) desc";
-            string sql3 =
-                "select channel.channelID, channel.channelName, COUNT(channel.channelName)/18000 * 100 as 'score' FROM tslog_tsuser tsuser INNER JOIN tslog_loggeduser log ON log.TSUserID = tsuser.TSUserID AND tsuser.TSUserID NOT IN (1, 10) AND log.Timestamp > DATE_SUB(CURDATE(), INTERVAL 180 DAY) RIGHT OUTER JOIN tslog_channel channel ON log.TSChannelID = channel.channelID WHERE (channel.parentChannelID = 2 and channel.doesExist = 1) or channel.parentChannelID in (select tc.channelId from tslog_channel tc where tc.parentChannelID = 2) GROUP BY channel.channelName having COUNT(channel.channelName) > 2 ORDER BY COUNT(channel.channelName) desc";
-            List<DBResult> results1 = DB.MainDB.GetMultipleResultsQuery(sql1, null);
-            List<DBResult> results2 = DB.MainDB.GetMultipleResultsQuery(sql2, null);
-            List<DBResult> results3 = DB.MainDB.GetMultipleResultsQuery(sql3, null);
+            string sql =
+                "select channel.channelId, channel.channelName, IFNULL(datatable.score, 0) as score from tslog_channel channel left outer join ( select channelID, round(sum(t.age_weighted)) as score from ( select t2.*, (GREATEST((1-age*age*0.0001), 0) + GREATEST((3-age*age*0.0003), 0) + GREATEST((7-age*age*0.15), 0)) as age_weighted from ( select log.id, channel.channelName, channel.channelID, DATEDIFF(curdate(),	log.`Timestamp`) as age from tslog_tsuser tsuser inner join tslog_loggeduser log on log.TSUserID = tsuser.TSUserID and tsuser.TSUserID not in (1, 10) right outer join tslog_channel channel on log.TSChannelID = channel.channelID where channel.parentChannelID = 2 and channel.doesExist and log.Timestamp > DATE_SUB(curdate(), interval 200 day) order by log.ID desc ) t2 ) t group by t.channelID order by score desc ) datatable on datatable.channelID = channel.channelID where channel.parentChannelID = 2 and channel.doesExist order by score desc";
 
-            if (results1 != null)
-            {
-                foreach (var dbResult in results1)
-                {
-                    if (!scores.ContainsKey(dbResult.Get("channelID").ToUInt()))
-                        scores.Add(dbResult.Get("channelID").ToUInt(),
-                            new ChannelScore(dbResult.Get("channelName"), dbResult.Get("channelID").ToUInt()));
-                    scores[dbResult.Get("channelID").ToUInt()].Score += dbResult.Get("score").ToDouble();
-                }
-            }
+            List<DBResult> results = DB.MainDB.GetMultipleResultsQuery(sql, null);
 
-            if (results2 != null)
+            if (results != null)
             {
-                foreach (var dbResult in results2)
+                foreach (var dbResult in results)
                 {
-                    if (!scores.ContainsKey(dbResult.Get("channelID").ToUInt()))
-                        scores.Add(dbResult.Get("channelID").ToUInt(),
-                            new ChannelScore(dbResult.Get("channelName"), dbResult.Get("channelID").ToUInt()));
-                    scores[dbResult.Get("channelID").ToUInt()].Score += dbResult.Get("score").ToDouble();
-                }
-            }
-
-            if (results3 != null)
-            {
-                foreach (var dbResult in results3)
-                {
-                    if (!scores.ContainsKey(dbResult.Get("channelID").ToUInt()))
-                        scores.Add(dbResult.Get("channelID").ToUInt(),
-                            new ChannelScore(dbResult.Get("channelName"), dbResult.Get("channelID").ToUInt()));
-                    scores[dbResult.Get("channelID").ToUInt()].Score += dbResult.Get("score").ToDouble();
+                    if (!scores.ContainsKey(dbResult.Get("channelId").ToUInt()))
+                        scores.Add(dbResult.Get("channelId").ToUInt(),
+                            new ChannelScore(dbResult.Get("channelName"), dbResult.Get("channelId").ToUInt()));
+                    scores[dbResult.Get("channelId").ToUInt()].Score += dbResult.Get("score").ToDouble();
                 }
             }
 
