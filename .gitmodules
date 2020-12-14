@@ -1,0 +1,3 @@
+[submodule "warcraft"]
+	path = warcraft
+	url = https://github.com/yschuurmans/warcraft
