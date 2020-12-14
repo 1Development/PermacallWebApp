@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArgentPonyWarcraftClient" Version="4.1.0" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.8">
@@ -26,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\warcraft\src\ArgentPonyWarcraftClient\ArgentPonyWarcraftClient.csproj" />
     <ProjectReference Include="..\PCAuthLibCore\PCAuthLibCore.csproj" />
     <ProjectReference Include="..\PCDataDLL\PCDataDLL.csproj" />
   </ItemGroup>

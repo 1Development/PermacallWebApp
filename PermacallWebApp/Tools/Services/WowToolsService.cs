@@ -211,9 +211,9 @@ namespace Tools.Services
                 .Where(x => x.Item != null)
                 .Select(x => x.Item.Id)
                 .ToArray();
-            var enchants = item.Spells?
-                .Where(x => x.Spell != null)
-                .Select(x => x.Spell.Id)
+            var enchants = item.Enchantments?
+                .Where(x => x.enchantment_id != 0)
+                .Select(x => x.enchantment_id)
                 .ToArray();
 
             return new ItemCache
