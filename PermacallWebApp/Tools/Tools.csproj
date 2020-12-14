@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>378a6bcd-4350-4965-a0d4-bc248abca35d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.3" />
+    <PackageReference Include="ArgentPonyWarcraftClient" Version="1.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.8">
       <PrivateAssets>all</PrivateAssets>
@@ -25,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\warcraft\src\ArgentPonyWarcraftClient\ArgentPonyWarcraftClient.csproj" />
     <ProjectReference Include="..\PCAuthLibCore\PCAuthLibCore.csproj" />
     <ProjectReference Include="..\PCDataDLL\PCDataDLL.csproj" />
   </ItemGroup>

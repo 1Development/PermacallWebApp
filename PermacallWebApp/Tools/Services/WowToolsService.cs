@@ -16,7 +16,7 @@ namespace Tools.Services
 {
     public class WowToolsService : IWowToolsService
     {
-        private const int characterCachetime = 5;
+        private const int characterCachetime = 1;
         private WarcraftClient warcraftClient;
         private ToolContext dbContext;
         private static Semaphore wowApiPool;

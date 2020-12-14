@@ -53,29 +53,29 @@
     <br /><br />
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-        <div>
-            <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
-            <form id="addDiv" style="display: none;">
-                <h4>Player name:</h4>
-                <input name="player" />
-                <h4>Character name:</h4>
-                <input name="name" />
-                <h4>Realm:</h4>
-                <input name="realm" />
-                <br />
-                <h4>Main? <input type="checkbox" name="isMain" /></h4>
-                <br />
-                <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
-                <br />
-                <p id="ErrorMessage" class="text-danger"></p>
-            </form>
-        </div>
+    <div>
+        <button id="ShowAddButton" class="btn btn-primary" onclick="ShowAddCharacter()">Add new Character</button>
+        <form id="addDiv" style="display: none;">
+            <h4>Player name:</h4>
+            <input name="player" />
+            <h4>Character name:</h4>
+            <input name="name" />
+            <h4>Realm:</h4>
+            <input name="realm" />
+            <br />
+            <h4>Main? <input type="checkbox" name="isMain" /></h4>
+            <br />
+            <button type="button" class="btn btn-primary" onclick="AddCharacter()">Add</button>
+            <br />
+            <p id="ErrorMessage" class="text-danger"></p>
+        </form>
+    </div>
     }
     @if (currentUser.Permission >= PCAuthLibCore.User.PermissionGroup.OPERATOR)
     {
-        <script>
-            window.CanDeleteCharacters = true;
-        </script>
+    <script>
+        window.CanDeleteCharacters = true;
+    </script>
     }
 
     @section Scripts {
@@ -211,6 +211,7 @@
                             characterIsUpdated = true;
                         }
                         var itemLink = 'item=' + item.itemId + '&ilvl=' + item.level + '&lvl=' + character.level;
+                        var enchantedClass = '';
                         if (item.bonus) {
                             itemLink = itemLink + '&bonus=' + item.bonus;
                         }
@@ -219,8 +220,9 @@
                         }
                         if (item.enchants) {
                             itemLink = itemLink + '&ench=' + item.enchants;
+                            enchantedClass = ' enchanted';
                         }
-                        innerhtml = innerhtml + '<td class="ItemQuality' + item.quality + '"><a class="noLink" href="https://wowhead.com/' + itemLink + '" data-wowhead="' + itemLink + '"> ' + item.level + '</a></td>';
+                        innerhtml = innerhtml + '<td class="ItemQuality' + item.quality + '"><a class="noLink'+enchantedClass+'" href="https://wowhead.com/' + itemLink + '" data-wowhead="' + itemLink + '"> ' + item.level + '</a></td>';
                     }
                     else {
                         innerhtml = innerhtml + '<td></td>';
